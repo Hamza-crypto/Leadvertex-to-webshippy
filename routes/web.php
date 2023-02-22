@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\WebhookController;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,11 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/test', function () {
 });
 
 Route::controller(WebhookController::class)->group(function () {
-    Route::get('/leadvertex/webhook', 'store');
+    Route::post('leadvertex/webhook', 'store');
 
 });
