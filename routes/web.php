@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/test', function () {
+    echo "This is just test page" . time();
 });
 
 Route::controller(WebhookController::class)->group(function () {
