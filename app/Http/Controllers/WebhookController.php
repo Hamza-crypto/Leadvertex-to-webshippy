@@ -24,6 +24,7 @@ class WebhookController extends Controller
 
 //            $json = file_get_contents(public_path('vertex.json'));
 //            $response = json_decode($json);
+            //just test push
 
             foreach ($response as $order) {
                 $products = [];
