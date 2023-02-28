@@ -36,6 +36,7 @@ class WebhookController extends Controller
 
 
         $quantity = false;
+        $subtotal = 0;
         foreach ($response as $order) {
             $products = [];
             foreach ($order->goods as $product) {
@@ -49,6 +50,7 @@ class WebhookController extends Controller
                     'vat' => 0,
                     'quantity' => $product->quantity
                 ];
+                $subtotal += $product->price * $product->quantity;
                 if ($product->quantity > 2 ){
                     $quantity = true;
                 }
@@ -82,9 +84,9 @@ class WebhookController extends Controller
 
                     ],
                     'payment' => [
-                        'paymentMode' => "card",
-                        'codAmount' => 0,
-                        'paymentStatus' => "paid",
+                        'paymentMode' => "cod",
+                        'codAmount' => $subtotal,
+                        'paymentStatus' => "pending",
                         'paidDate' => $order->lastUpdate,
                         "shippingPrice" => 1500,
                         'shippingVat' => 0,
@@ -98,6 +100,9 @@ class WebhookController extends Controller
             if ($quantity) {
                 $request_body['order']['payment']['shippingPrice'] = 0;
             }
+            else{
+                $request_body['order']['payment']['codAmount'] += 1500;
+            }
 
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
             $request_body = ['request' => json_encode($request_body)];
@@ -108,6 +113,7 @@ class WebhookController extends Controller
             ])->asForm()->post($url, $request_body);
             app('log')->channel('webhooks')->info($response->json());
 
+            return $response->json();
         }
 
         }
