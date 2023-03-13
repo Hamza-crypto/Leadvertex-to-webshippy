@@ -47,7 +47,7 @@ class WebhookController extends Controller
                     'sku' => $product_sku->webshippy_sku,
                     'productName' => $product->name,
                     'priceGross' => $product->price,
-                    'vat' => 0,
+                    'vat' => 0.27,
                     'quantity' => $product->quantity
                 ];
                 $subtotal += $product->price * $product->quantity;
@@ -55,6 +55,8 @@ class WebhookController extends Controller
                     $quantity = true;
                 }
             }
+
+            $shippingPrice = 3500;
 
             $request_body = [
                 'apiKey' => env('TOKEN'),
@@ -88,7 +90,7 @@ class WebhookController extends Controller
                         'codAmount' => $subtotal,
                         'paymentStatus' => "pending",
                         'paidDate' => $order->lastUpdate,
-                        "shippingPrice" => 1500,
+                        "shippingPrice" => $shippingPrice,
                         'shippingVat' => 0,
                         'currency' => "HUF",
                         'discount' => 0
@@ -98,10 +100,10 @@ class WebhookController extends Controller
             ];
 
             if ($quantity) {
-                $request_body['order']['payment']['shippingPrice'] = 0;
+                $request_body['order']['payment']['shippingPrice'] = 0; //if quantity > 2, then set shipping price to 0
             }
             else{
-                $request_body['order']['payment']['codAmount'] += 1500;
+                $request_body['order']['payment']['codAmount'] += $shippingPrice; // If this line removed, then COD amount will be 0 on Webshippy
             }
 
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
