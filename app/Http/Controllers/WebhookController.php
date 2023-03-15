@@ -35,13 +35,13 @@ class WebhookController extends Controller
 //            $response = json_decode($json);
 
         $subtotal = 0;
+        $total_number_of_products = 0;
         foreach ($response as $order) {
             $products = [];
-            $order_products = collect($order->goods)->sortBy('quantity')->toArray(); //sorting the array by quantity
-                                                                                            // so that greater quantity product comes at the end
-            foreach ( $order_products as $product ) {
+
+            foreach ($order->goods as $product) {
                 $product_sku = ProductMapping::where('product_id_lv', $product->goodID)->first();
-                if(!$product_sku) continue;
+                if (!$product_sku) continue;
 
                 $products[] = [
                     'sku' => $product_sku->webshippy_sku,
@@ -51,18 +51,18 @@ class WebhookController extends Controller
                     'quantity' => $product->quantity
                 ];
                 $subtotal += $product->price * $product->quantity;
-                if ($product->quantity > 2 ){
-                    $shippingPrice = 0;
-                }
-                elseif ($product->quantity == 2){
-                    $shippingPrice = 1500;
-                }
-                elseif ($product->quantity == 1){
-                    $shippingPrice = 3500;
-                }
+                $total_number_of_products+= $product->quantity;
             }
 
-           $request_body = [
+            if ($total_number_of_products > 2) {
+                $shippingPrice = 0;
+            } elseif ($total_number_of_products == 2) {
+                $shippingPrice = 1500;
+            } elseif ($total_number_of_products == 1) {
+                $shippingPrice = 3500;
+            }
+
+            $request_body = [
                 'apiKey' => env('TOKEN'),
                 'order' => [
                     'referenceId' => "LV#" . $data['id'],
@@ -103,14 +103,11 @@ class WebhookController extends Controller
                 ]
             ];
 
-           $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
-           $request_body['order']['payment']['codAmount'] += $shippingPrice;
-
+            $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
+            $request_body['order']['payment']['codAmount'] += $shippingPrice;
 
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
             $request_body = ['request' => json_encode($request_body)];
-
-            echo "test";
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded'
@@ -120,6 +117,6 @@ class WebhookController extends Controller
             return $response->json();
         }
 
-        }
+    }
 }
 //        app('log')->channel('webhooks')->info($data);
