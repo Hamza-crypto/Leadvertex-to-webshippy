@@ -34,12 +34,12 @@ class WebhookController extends Controller
 //            $json = file_get_contents(public_path('vertex.json'));
 //            $response = json_decode($json);
 
-
-        $quantity = false;
         $subtotal = 0;
         foreach ($response as $order) {
             $products = [];
-            foreach ($order->goods as $product) {
+            $order_products = collect($order->goods)->sortBy('quantity')->toArray(); //sorting the array by quantity
+                                                                                            // so that greater quantity product comes at the end
+            foreach ( $order_products as $product ) {
                 $product_sku = ProductMapping::where('product_id_lv', $product->goodID)->first();
                 if(!$product_sku) continue;
 
@@ -52,13 +52,17 @@ class WebhookController extends Controller
                 ];
                 $subtotal += $product->price * $product->quantity;
                 if ($product->quantity > 2 ){
-                    $quantity = true;
+                    $shippingPrice = 0;
+                }
+                elseif ($product->quantity == 2){
+                    $shippingPrice = 1500;
+                }
+                elseif ($product->quantity == 1){
+                    $shippingPrice = 3500;
                 }
             }
 
-            $shippingPrice = 3500;
-
-            $request_body = [
+           $request_body = [
                 'apiKey' => env('TOKEN'),
                 'order' => [
                     'referenceId' => "LV#" . $data['id'],
@@ -99,16 +103,14 @@ class WebhookController extends Controller
                 ]
             ];
 
-            if ($quantity) {
-                $request_body['order']['payment']['shippingPrice'] = 0; //if quantity > 2, then set shipping price to 0
-            }
-            else{
-                $request_body['order']['payment']['codAmount'] += $shippingPrice; // If this line removed, then COD amount will be 0 on Webshippy
-            }
+           $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
+           $request_body['order']['payment']['codAmount'] += $shippingPrice;
+
 
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
             $request_body = ['request' => json_encode($request_body)];
 
+            echo "test";
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded'
