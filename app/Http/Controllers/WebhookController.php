@@ -121,7 +121,5 @@ class WebhookController extends Controller
         }
 
         }
-
-
 }
 //        app('log')->channel('webhooks')->info($data);
