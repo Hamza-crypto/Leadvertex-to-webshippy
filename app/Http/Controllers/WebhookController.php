@@ -72,7 +72,7 @@ class WebhookController extends Controller
                         'email' => $order->email,
                         'phone' => $order->phone ?? "",
                         'countryCode' => $order->country,
-                        'zip' => "",
+                        'zip' => $order->postIndex,
                         'city' => $order->city,
                         'country' => $order->country,
                         'address1' => $order->address,
