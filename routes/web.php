@@ -16,10 +16,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/test', function () {
-    echo "This is just test page" . time();
+    echo "This is just test page " . time();
 });
 
 Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store');
+    Route::post('leadvertex-all-orders/webhook', 'createRecordOnComnica');
+    // Route::get('createRecordOnComnica', 'sendData');
 
 });

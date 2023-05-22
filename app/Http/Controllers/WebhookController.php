@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EmailSchedule;
-use App\Models\EmailSchedules;
 use App\Models\ProductMapping;
 use App\Models\ProductWebhook;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 class WebhookController extends Controller
 {
@@ -118,5 +116,86 @@ class WebhookController extends Controller
         }
 
     }
+
+    public function createRecordOnComnica(Request $request){
+        $data = $request->all();
+
+        app('log')->channel('webhooks')->info($data);
+
+        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
+
+        $response = Http::get($url);
+        // $response = file_get_contents(public_path('vertex.json'));
+
+        $response = json_decode($response);
+
+        foreach ($response as $order) {
+                $name = $order->fio;
+                $phone = $order->phone;
+                $productName = "";
+
+                foreach ($order->goods as $product) {
+                    $productName .= $product->name . ',';
+                }
+
+        }
+
+        $this->sendData($name, $phone, $productName);
+
+    }
+
+    public function sendData($name, $phone, $productName){
+
+        $data = [
+            'rq_sent' => '',
+            'payload' => [
+                'comments' => [],
+                'contacts' => [
+                    [
+                        'active' => true,
+                        'contact' => $phone,
+                        'name' => '',
+                        'preferred' => true,
+                        'priority' => 1,
+                        'source_column' => 'phone',
+                        'type' => 'phone'
+                    ]
+                ],
+                'custom_data' => [
+                    'name' => $name,
+                    'phone' => $phone,
+                    'termek' => $productName
+                ],
+                'system_columns' => [
+                    'callback_to_user_id' => null,
+                    'dial_from' => null,
+                    'dial_to' => null,
+                    'manual_redial' => null,
+                    'next_call' => null,
+                    'priority' => 1,
+                    'project_id' => 76
+                ]
+            ]
+        ];
+
+        $response = Http::withBasicAuth(env('COMNICA_USER'), env('COMNICA_PASS'))->post( env('COMNICA_API_URL') .  '/integration/cc/record/save/v1', $data);
+
+        #run loop on response->json and create string for each array element
+        $responseArray = json_decode($response, true);
+        $response = $response->json();
+
+        $result = '';
+        foreach ($responseArray as $key => $value) {
+            $result .= $key . ': ' . (is_array($value) ? json_encode($value) : $value) . ', ';
+        }
+
+        $result = rtrim($result, ', ');
+
+        $result = substr($result, 0, 2000);
+        DiscordAlert::message($result);
+
+    }
+
+
 }
-//        app('log')->channel('webhooks')->info($data);
+

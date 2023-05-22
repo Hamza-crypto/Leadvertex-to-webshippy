@@ -1,1 +1,103 @@
-{ "4": { "datetime": "2023-02-21 14:20:34", "timezone": 5, "status": 1, "statusGroup": "accepted", "price": 0, "total": 59500, "webmaster": null, "operatorID": null, "domain": "", "referer": "", "ip": "", "timeSpent": 0, "utm_source": "", "utm_medium": "", "utm_term": "", "utm_content": "", "utm_campaign": "", "lastUpdate": "2023-02-22 23:14:11", "lastModify": "2023-02-22 23:14:11", "goods": { "192477": { "goodID": "192477", "name": "Weight factor", "quantity": "1", "price": "11900", "categoryID": "0", "categoryName": "Без категории", "purchasingPrice": "3000" }, "192478": { "goodID": "192478", "name": "Aspermin", "quantity": "2", "price": "23800", "categoryID": "0", "categoryName": "Без категории", "purchasingPrice": "3000" }, "192479": { "goodID": "192479", "name": "Skin day", "quantity": "3", "price": "23800", "categoryID": "0", "categoryName": "Без категории", "purchasingPrice": "3000" } }, "lastTextSms": null, "lastVoiceSms": null, "lastVoiceSmsStatus": null, "callmodeRecallAt": "0000-00-00 00:00:00", "approvedAt": "2023-02-22 23:14:11", "canceledAt": "2023-02-22 23:13:58", "shippedAt": "2023-02-22 23:05:14", "buyoutAt": null, "refundedAt": null, "roboLog": null, "recallLog": null, "externalWebmaster": null, "externalID": null, "similar": { "phone": 1, "ip": 0 }, "fio": "Ariel Shelton", "country": "Ukraine", "postIndex": "", "region": "", "city": "Eaque minus similique sapiente non", "address": "Ex quia et est commodo eveniet amet laboriosam illo quo magna sapiente iste dolorem accusantium totam odit minim officia", "phone": "+923115483343", "email": "rirezap@mailinator.com", "quantity": "6", "comment": "Amet perspiciatis velit non ea aliqua Necessitatibus est consectetur porro in quos proident" } }
+{
+    "10": {
+        "datetime": "2023-02-24 12:40:06",
+        "timezone": -123,
+        "status": 9,
+        "statusGroup": "spam",
+        "price": 0,
+        "total": 59500,
+        "webmaster": {
+            "id": 1,
+            "login": "terraleads",
+            "sum": 500,
+            "paid": -1
+        },
+        "operatorID": null,
+        "domain": "",
+        "referer": "",
+        "ip": "",
+        "timeSpent": 0,
+        "utm_source": "",
+        "utm_medium": "",
+        "utm_term": "",
+        "utm_content": "",
+        "utm_campaign": "",
+        "lastUpdate": "2023-03-27 09:03:09",
+        "lastModify": "2023-03-27 09:03:09",
+        "goods": {
+            "193651": {
+                "goodID": "193651",
+                "name": "Erexper",
+                "quantity": "1",
+                "price": "11900",
+                "categoryID": "0",
+                "categoryName": "Без категории",
+                "purchasingPrice": "2500"
+            },
+            "193653": {
+                "goodID": "193653",
+                "name": "Immunomin",
+                "quantity": "1",
+                "price": "11900",
+                "categoryID": "0",
+                "categoryName": "Без категории",
+                "purchasingPrice": "2500"
+            },
+            "193654": {
+                "goodID": "193654",
+                "name": "Oftalmin",
+                "quantity": "1",
+                "price": "11900",
+                "categoryID": "0",
+                "categoryName": "Без категории",
+                "purchasingPrice": "2500"
+            },
+            "193655": {
+                "goodID": "193655",
+                "name": "Estrodim",
+                "quantity": "1",
+                "price": "11900",
+                "categoryID": "0",
+                "categoryName": "Без категории",
+                "purchasingPrice": "2500"
+            },
+            "193656": {
+                "goodID": "193656",
+                "name": "Life Factor",
+                "quantity": "1",
+                "price": "11900",
+                "categoryID": "0",
+                "categoryName": "Без категории",
+                "purchasingPrice": "2500"
+            }
+        },
+        "lastTextSms": null,
+        "lastVoiceSms": null,
+        "lastVoiceSmsStatus": null,
+        "callmodeRecallAt": "0000-00-00 00:00:00",
+        "approvedAt": "2023-03-23 13:09:32",
+        "canceledAt": "2023-03-23 13:09:25",
+        "shippedAt": "2023-02-27 22:44:27",
+        "buyoutAt": "2023-03-13 18:20:38",
+        "refundedAt": "2023-02-27 22:48:24",
+        "roboLog": "",
+        "recallLog": null,
+        "externalWebmaster": "14311",
+        "externalID": "24060468",
+        "similar": {
+            "phone": 3,
+            "ip": 0
+        },
+        "fio": "Hamza Siddique",
+        "country": "HU",
+        "postIndex": "47080",
+        "region": "",
+        "city": "Taxila",
+        "address": "Post Office Usman Khattar Taxila,Rawalpindi",
+        "phone": "3611234567",
+        "email": "6793siddique@gmail.com",
+        "quantity": "5",
+        "comment": "",
+        "additional1": ""
+    }
+}
