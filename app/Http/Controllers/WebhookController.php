@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
+use function PHPSTORM_META\type;
+
 class WebhookController extends Controller
 {
     function store(Request $request)
@@ -119,6 +121,7 @@ class WebhookController extends Controller
 
     public function createRecordOnComnica(Request $request){
         $data = $request->all();
+        DiscordAlert::message("Webhook Recieved for " . $data['id']);
 
         app('log')->channel('webhooks')->info($data);
 
@@ -146,6 +149,10 @@ class WebhookController extends Controller
 
     public function sendData($name, $phone, $productName){
 
+        if (substr($phone, 0, 1) === "0") {
+            $phone = "3" . substr($phone, 1);
+        }
+
         $data = [
             'rq_sent' => '',
             'payload' => [
@@ -153,7 +160,7 @@ class WebhookController extends Controller
                 'contacts' => [
                     [
                         'active' => true,
-                        'contact' => $phone,
+                        'contact' => "" . $phone,
                         'name' => '',
                         'preferred' => true,
                         'priority' => 1,
@@ -163,7 +170,7 @@ class WebhookController extends Controller
                 ],
                 'custom_data' => [
                     'name' => $name,
-                    'phone' => $phone,
+                    'phone' => "" . $phone,
                     'termek' => $productName
                 ],
                 'system_columns' => [
