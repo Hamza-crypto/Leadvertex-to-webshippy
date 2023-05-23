@@ -22,6 +22,6 @@ Route::get('/test', function () {
 Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store');
     Route::post('leadvertex-all-orders/webhook', 'createRecordOnComnica');
-    // Route::get('createRecordOnComnica', 'sendData');
+    Route::get('createRecordOnComnica', 'sendData');
 
 });

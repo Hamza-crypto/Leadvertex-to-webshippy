@@ -8,8 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
-use function PHPSTORM_META\type;
-
 class WebhookController extends Controller
 {
     function store(Request $request)
@@ -127,8 +125,8 @@ class WebhookController extends Controller
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
 
-        $response = Http::get($url);
-        // $response = file_get_contents(public_path('vertex.json'));
+        // $response = Http::get($url);
+        $response = file_get_contents(public_path('vertex.json'));
 
         $response = json_decode($response);
 
@@ -143,11 +141,11 @@ class WebhookController extends Controller
 
         }
 
-        $this->sendData($name, $phone, $productName);
+         $this->sendData($name, $phone, $productName, $data['id'], $order->datetime);
 
     }
 
-    public function sendData($name, $phone, $productName){
+    public function sendData($name, $phone, $productName, $id, $date){
 
         if (substr($phone, 0, 1) === "0") {
             $phone = "3" . substr($phone, 1);
@@ -160,7 +158,7 @@ class WebhookController extends Controller
                 'contacts' => [
                     [
                         'active' => true,
-                        'contact' => "" . $phone,
+                        'contact' => $phone,
                         'name' => '',
                         'preferred' => true,
                         'priority' => 1,
@@ -170,8 +168,10 @@ class WebhookController extends Controller
                 ],
                 'custom_data' => [
                     'name' => $name,
-                    'phone' => "" . $phone,
-                    'termek' => $productName
+                    'phone' => $phone,
+                    'termek' => $productName,
+                    'sp_id' => $id,
+                    'date' => $date,
                 ],
                 'system_columns' => [
                     'callback_to_user_id' => null,
