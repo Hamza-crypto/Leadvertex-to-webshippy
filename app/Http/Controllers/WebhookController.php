@@ -125,8 +125,8 @@ class WebhookController extends Controller
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
 
-        // $response = Http::get($url);
-        $response = file_get_contents(public_path('vertex.json'));
+        $response = Http::get($url);
+        // $response = file_get_contents(public_path('vertex.json'));
 
         $response = json_decode($response);
 
