@@ -147,6 +147,11 @@ class WebhookController extends Controller
 
     public function sendData($name, $phone, $productName, $id, $date){
 
+        //If starting from 0, then append 3 at the begining
+        if (strlen($phone) > 11) {
+            $phone = substr($phone, -11);
+        }
+
         if (substr($phone, 0, 1) === "0") {
             $phone = "3" . substr($phone, 1);
         }
