@@ -148,13 +148,13 @@ class WebhookController extends Controller
     public function sendData($name, $phone, $productName, $id, $date){
 
         //If starting from 0, then append 3 at the begining
-        if (strlen($phone) > 11) {
-            $phone = substr($phone, -11);
-        }
+        // if (strlen($phone) > 11) {
+        //     $phone = substr($phone, -11);
+        // }
 
-        if (substr($phone, 0, 1) === "0") {
-            $phone = "3" . substr($phone, 1);
-        }
+        // if (substr($phone, 0, 1) === "0") {
+        //     $phone = "3" . substr($phone, 1);
+        // }
 
         $data = [
             'rq_sent' => '',
@@ -191,19 +191,29 @@ class WebhookController extends Controller
         ];
 
         $response = Http::withBasicAuth(env('COMNICA_USER'), env('COMNICA_PASS'))->post( env('COMNICA_API_URL') .  '/integration/cc/record/save/v1', $data);
+        //$response = file_get_contents(public_path('comnica.json'));
 
+        $main_response = json_decode($response);
         #run loop on response->json and create string for each array element
-        $responseArray = json_decode($response, true);
-        $response = $response->json();
 
         $result = '';
-        foreach ($responseArray as $key => $value) {
-            $result .= $key . ': ' . (is_array($value) ? json_encode($value) : $value) . ', ';
+        if(isset($main_response->payload->errors)){
+
+            $responseArray = json_decode($response, true);
+            foreach ($responseArray as $key => $value) {
+                $result .= $key . ': ' . (is_array($value) ? json_encode($value) : $value) . ', ';
+            }
+
+            $result = rtrim($result, ', ');
+
+            $result = substr($result, 0, 2000);
+        }
+        else{
+            $result = "Comnica ID: ";
+            $result .= $main_response->payload->id;
         }
 
-        $result = rtrim($result, ', ');
 
-        $result = substr($result, 0, 2000);
         DiscordAlert::message($result);
 
     }
