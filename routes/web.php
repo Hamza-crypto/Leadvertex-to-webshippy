@@ -3,6 +3,7 @@
 use App\Http\Controllers\WebhookController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
+use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,12 +17,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/test', function () {
-    echo "This is just test page " . time();
+    $result = "This is just test page " . time();
+    echo  $result;
+    DiscordAlert::message($result);
 });
 
 Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store');
     Route::post('leadvertex-all-orders/webhook', 'createRecordOnComnica');
-    Route::get('createRecordOnComnica', 'sendData');
+    // Route::get('createRecordOnComnica', 'sendData');
 
 });
