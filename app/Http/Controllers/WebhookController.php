@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductMapping;
 use App\Models\ProductWebhook;
+use App\Models\WebshippyOrders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
@@ -107,21 +108,27 @@ class WebhookController extends Controller
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
             $request_body = ['request' => json_encode($request_body)];
 
-            print_r( $request_body);
-            die();
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded'
             ])->asForm()->post($url, $request_body);
+
+
             app('log')->channel('webhooks')->info($response->json());
 
-            return $response->json();
+            $response = json_decode($response);
+            WebshippyOrders::create([
+                'order_id' => $response->wspyId
+                ]
+            );
+
+            return $response;
         }
 
     }
 
     public function createRecordOnComnica(Request $request){
         $data = $request->all();
-        DiscordAlert::message("Webhook Recieved for " . $data['id']);
+        $msg = "Webhook Recieved for " . $data['id'] . " ";
 
         app('log')->channel('webhooks')->info($data);
 
@@ -143,14 +150,14 @@ class WebhookController extends Controller
 
         }
 
-         $this->sendData($name, $phone, $productName, $data['id'], $order->datetime);
+         $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
 
     }
 
-    public function sendData($name, $phone, $productName, $id, $date){
+    public function sendData($name, $phone, $productName, $id, $date, $msg){
 
         if (strlen($phone) == 9) {
-            $phone = "+36" . $phone;
+            $phone = "36" . $phone;
         }
 
         //If starting from 0, then append 3 at the begining
@@ -161,6 +168,11 @@ class WebhookController extends Controller
         if (substr($phone, 0, 1) === "0") {
             $phone = "3" . substr($phone, 1);
         }
+
+        $msg .= "Phone: ";
+        $msg .= $phone;
+        $msg .= " ";
+        $result = $msg;
 
         $data = [
             'rq_sent' => '',
@@ -202,7 +214,7 @@ class WebhookController extends Controller
         $main_response = json_decode($response);
         #run loop on response->json and create string for each array element
 
-        $result = '';
+
         if(isset($main_response->payload->errors)){
 
             $responseArray = json_decode($response, true);
@@ -215,7 +227,7 @@ class WebhookController extends Controller
             $result = substr($result, 0, 2000);
         }
         else{
-            $result = "Comnica ID: ";
+            $result .= " Comnica ID: ";
             $result .= $main_response->payload->id;
         }
 
