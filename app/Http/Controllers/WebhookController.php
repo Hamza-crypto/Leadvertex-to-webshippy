@@ -107,6 +107,8 @@ class WebhookController extends Controller
             $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
             $request_body = ['request' => json_encode($request_body)];
 
+            print_r( $request_body);
+            die();
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded'
             ])->asForm()->post($url, $request_body);
@@ -146,6 +148,10 @@ class WebhookController extends Controller
     }
 
     public function sendData($name, $phone, $productName, $id, $date){
+
+        if (strlen($phone) == 9) {
+            $phone = "+36" . $phone;
+        }
 
         //If starting from 0, then append 3 at the begining
         if (strlen($phone) > 11) {
