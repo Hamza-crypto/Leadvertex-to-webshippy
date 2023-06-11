@@ -23,7 +23,7 @@ class WebshippyOrdersController extends Controller
         $orders = WebshippyOrders::where('status', 'new')
             ->whereDate('created_at', '<',  $threeDaysAgo)
             ->whereDate('updated_at', '<',  $oneDaysAgo)
-            ->take(10)
+            ->take(20)
             ->get();
 
         foreach ($orders as $order) {
