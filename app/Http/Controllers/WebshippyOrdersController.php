@@ -58,7 +58,7 @@ class WebshippyOrdersController extends Controller
             if ($status == 'success') {
                 $message = $webshippy_response->message;
                 if (count($message) > 0 && $message[0] == 'Orders not found') {
-                    //$order->delete();
+                    $order->delete();
                     dump('Order Deleted from DB');
                     $msg = "Orders not found in WebShippy";
                     continue;
@@ -74,20 +74,19 @@ class WebshippyOrdersController extends Controller
                     $lead_vertex_id =  $response_array->referenceId;
                     $lead_vertex_id = substr($lead_vertex_id, strpos($lead_vertex_id, '#') + 1);
 
-                    $lead_vertex_id = 10;
                     $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
                     if ($lv_response_status == 'OK') {
-                        //$order->delete();
+                        $order->delete();
                         dump('Order Deleted from DB after updating on LV');
                     }
 
-                    $msg = sprintf("Webshippy Order %s refused : Order status updated onLeadvertex ID %d", $order->order_id, $lead_vertex_id);
+                    $msg = sprintf("Webshippy Order %s refused : Order status updated on Leadvertex ID %d", $order->order_id, $lead_vertex_id);
                 } elseif ($order_status == 'fulfilled') {
                     $payment_status = $response_array->paymentStatus;
                     $cod_status = $response_array->codStatus;
                     if ($payment_status == 'paid' && $cod_status == 'received') {
                         dump('Order deleted, Fulfilled and Paid');
-                        //$order->delete();
+                        $order->delete();
                         $msg = sprintf("Webshippy Order %s fulfilled", $order->order_id);
                     }
                 }
@@ -123,7 +122,7 @@ class WebshippyOrdersController extends Controller
         $url = sprintf("%s/updateOrder.html?token=%s&id=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $lead_vertex_id);
 
         $request_body = [
-            'status' => 8 // 7 = Return
+            'status' => 7 // 7 = Return
         ];
 
         $lv_response = Http::withHeaders([
