@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\WebshippyOrdersController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
@@ -28,3 +29,5 @@ Route::controller(WebhookController::class)->group(function () {
     // Route::get('createRecordOnComnica', 'sendData');
 
 });
+
+Route::get('get_webshippy_orders', [WebshippyOrdersController::class, 'UpdateOrders']);

@@ -122,6 +122,11 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/webhooks.log'),
         ],
+
+        'webshippy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/webshippy.log'),
+        ],
     ],
 
 ];
