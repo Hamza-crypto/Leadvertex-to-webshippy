@@ -7,129 +7,153 @@ use App\Models\ProductWebhook;
 use App\Models\WebshippyOrders;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadVertexNotification;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 class WebhookController extends Controller
 {
     function store(Request $request)
     {
+
         $data = $request->all();
 
         app('log')->channel('webhooks')->info($data);
         if ($data['status'] != 'accepted') return;
 
+        dump($data);
+        $data_array['to'] = 'webshippy';
+        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id'] );
+
+        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
 
-        $response = Http::get($url);
+        try{
+            $response = Http::get($url);
 
-        ProductWebhook::create([
-            'product_id' => $data['id'],
-            'response' => $response
-        ]);
-
-        $response = json_decode($response);
-
-//            $json = file_get_contents(public_path('vertex.json'));
-//            $response = json_decode($json);
-
-        $subtotal = 0;
-        $total_number_of_products = 0;
-        foreach ($response as $order) {
-            $products = [];
-
-            foreach ($order->goods as $product) {
-                $product_sku = ProductMapping::where('product_id_lv', $product->goodID)->first();
-                if (!$product_sku) continue;
-
-                $products[] = [
-                    'sku' => $product_sku->webshippy_sku,
-                    'productName' => $product->name,
-                    'priceGross' => $product->price,
-                    'vat' => 0.27,
-                    'quantity' => $product->quantity
-                ];
-                $subtotal += $product->price * $product->quantity;
-                $total_number_of_products+= $product->quantity;
-            }
-
-            if ($total_number_of_products > 2) {
-                $shippingPrice = 0;
-            } elseif ($total_number_of_products == 2) {
-                $shippingPrice = 1500;
-            } elseif ($total_number_of_products == 1) {
-                $shippingPrice = 3500;
-            }
-
-            $request_body = [
-                'apiKey' => env('TOKEN'),
-                'order' => [
-                    'referenceId' => "LV#" . $data['id'],
-                    'createdAt' => $order->datetime,
-                    'shipping' => [
-                        'name' => $order->fio,
-                        'email' => $order->email,
-                        'phone' => $order->phone ?? "",
-                        'countryCode' => $order->country,
-                        'zip' => $order->postIndex,
-                        'city' => $order->city,
-                        'country' => $order->country,
-                        'address1' => $order->address,
-                        'note' => $order->comment
-                    ],
-                    'billing' => [
-                        'name' => $order->fio,
-                        'email' => $order->email,
-                        'phone' => $order->phone ?? "",
-                        'countryCode' => $order->country,
-                        'zip' => $order->postIndex,
-                        'city' => $order->city,
-                        'country' => $order->country,
-                        'address1' => $order->address
-
-                    ],
-                    'payment' => [
-                        'paymentMode' => "cod",
-                        'codAmount' => $subtotal,
-                        'paymentStatus' => "pending",
-                        'paidDate' => $order->lastUpdate,
-                        "shippingPrice" => $shippingPrice,
-                        'shippingVat' => 0,
-                        'currency' => "HUF",
-                        'discount' => 0
-                    ],
-                    'products' => $products
-                ]
-            ];
-
-            $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
-            $request_body['order']['payment']['codAmount'] += $shippingPrice;
-
-            $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
-            $request_body = ['request' => json_encode($request_body)];
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/x-www-form-urlencoded'
-            ])->asForm()->post($url, $request_body);
-
-
-            app('log')->channel('webhooks')->info($response->json());
+            ProductWebhook::create([
+                'product_id' => $data['id'],
+                'response' => $response
+            ]);
 
             $response = json_decode($response);
-            WebshippyOrders::create([
-                'order_id' => $response->wspyId
-                ]
-            );
 
-            return $response;
+    //            $json = file_get_contents(public_path('vertex.json'));
+    //            $response = json_decode($json);
+
+            $subtotal = 0;
+            $total_number_of_products = 0;
+            foreach ($response as $order) {
+                $products = [];
+
+                foreach ($order->goods as $product) {
+                    $product_sku = ProductMapping::where('product_id_lv', $product->goodID)->first();
+                    if (!$product_sku) continue;
+
+                    $products[] = [
+                        'sku' => $product_sku->webshippy_sku,
+                        'productName' => $product->name,
+                        'priceGross' => $product->price,
+                        'vat' => 0.27,
+                        'quantity' => $product->quantity
+                    ];
+                    $subtotal += $product->price * $product->quantity;
+                    $total_number_of_products+= $product->quantity;
+                }
+
+                if ($total_number_of_products > 2) {
+                    $shippingPrice = 0;
+                } elseif ($total_number_of_products == 2) {
+                    $shippingPrice = 1500;
+                } elseif ($total_number_of_products == 1) {
+                    $shippingPrice = 3500;
+                }
+
+
+                $request_body = [
+                    'apiKey' => env('TOKEN') . 'hamza',
+                    'order' => [
+                        'referenceId' => "LV#" . $data['id'],
+                        'createdAt' => $order->datetime,
+                        'shipping' => [
+                            'name' => $order->fio,
+                            'email' => $order->email,
+                            'phone' => $order->phone ?? "",
+                            'countryCode' => $order->country,
+                            'zip' => $order->postIndex,
+                            'city' => $order->city,
+                            'country' => $order->country,
+                            'address1' => $order->address,
+                            'note' => $order->comment
+                        ],
+                        'billing' => [
+                            'name' => $order->fio,
+                            'email' => $order->email,
+                            'phone' => $order->phone ?? "",
+                            'countryCode' => $order->country,
+                            'zip' => $order->postIndex,
+                            'city' => $order->city,
+                            'country' => $order->country,
+                            'address1' => $order->address
+
+                        ],
+                        'payment' => [
+                            'paymentMode' => "cod",
+                            'codAmount' => $subtotal,
+                            'paymentStatus' => "pending",
+                            'paidDate' => $order->lastUpdate,
+                            "shippingPrice" => $shippingPrice,
+                            'shippingVat' => 0,
+                            'currency' => "HUF",
+                            'discount' => 0
+                        ],
+                        'products' => $products
+                    ]
+                ];
+
+                $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
+                $request_body['order']['payment']['codAmount'] += $shippingPrice;
+
+                $url = sprintf("%s/CreateOrder/json", env('WEBSHIPPY_API_URL'));
+                $request_body = ['request' => json_encode($request_body)];
+
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                ])->asForm()->post($url, $request_body);
+
+
+                dump($response->json());
+
+                app('log')->channel('webhooks')->info($response->json());
+
+                $response = json_decode($response);
+                WebshippyOrders::create([
+                    'order_id' => $response->wspyId
+                    ]
+                );
+
+                $data_array['msg'] = sprintf("New order created on Webshippy with order no. %s", $response->wspyId);
+                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+
+                return $response;
+            }
+        }
+
+        catch (\Exception $e){
+            $data_array['msg'] = $e->getMessage() . " WebhookController line 145";
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         }
 
     }
 
     public function createRecordOnComnica(Request $request){
         $data = $request->all();
-        $msg = "Webhook Recieved for " . $data['id'] . " ";
+        $msg = "";
 
+        $data_array['to'] = 'comnica';
+        $data_array['msg'] = "Leadvertex new order: " . $data['id'] . " ";
+        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         app('log')->channel('webhooks')->info($data);
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
@@ -155,6 +179,8 @@ class WebhookController extends Controller
     }
 
     public function sendData($name, $phone, $productName, $id, $date, $msg){
+
+        $data_array['to'] = 'comnica';
 
         if (strlen($phone) == 9) {
             $phone = "36" . $phone;
@@ -231,7 +257,9 @@ class WebhookController extends Controller
             $result .= $main_response->payload->id;
         }
 
-        DiscordAlert::message($result);
+        $data_array['msg'] = $result;
+        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        // DiscordAlert::message($result);
 
     }
 

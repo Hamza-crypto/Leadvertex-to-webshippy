@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
+use App\Notifications\LeadVertexNotification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Illuminate\Support\Facades\Notification;
 
 /*
 |--------------------------------------------------------------------------

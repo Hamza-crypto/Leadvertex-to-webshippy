@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\WebshippyOrders;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadVertexNotification;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 class WebshippyOrdersController extends Controller
 {
     function UpdateOrders()
     {
+        $data['to'] = 'webshippy';
         $url = sprintf("%s/GetOrder/json", env('WEBSHIPPY_API_URL'));
 
         $count = 1;
@@ -24,7 +27,7 @@ class WebshippyOrdersController extends Controller
             ->get();
 
         foreach ($orders as $order) {
-            sleep(2);
+            // sleep(2);
             $order->touch();
             $msg = "";
             $request_body = [
@@ -65,6 +68,7 @@ class WebshippyOrdersController extends Controller
                 $order_status = $response_array->status;
 
                 if ($order_status == 'new') {
+                    dump('Order is new');
                     continue;
                 } elseif ($order_status == 'refused') {
                     $lead_vertex_id =  $response_array->referenceId;
@@ -77,18 +81,23 @@ class WebshippyOrdersController extends Controller
                         dump('Order Deleted from DB after updating on LV');
                     }
 
-                    $msg = sprintf("WebshippyOrder %s refused : Leadvertex ID %d", $order->order_id, $lead_vertex_id);
+                    $msg = sprintf("Webshippy Order %s refused : Order status updated onLeadvertex ID %d", $order->order_id, $lead_vertex_id);
                 } elseif ($order_status == 'fulfilled') {
                     $payment_status = $response_array->paymentStatus;
                     $cod_status = $response_array->codStatus;
                     if ($payment_status == 'paid' && $cod_status == 'received') {
                         dump('Order deleted, Fulfilled and Paid');
                         //$order->delete();
-                        $msg = sprintf("WebshippyOrder %s fulfilled", $order->order_id);
+                        $msg = sprintf("Webshippy Order %s fulfilled", $order->order_id);
                     }
                 }
 
-                DiscordAlert::message($msg);
+                // DiscordAlert::message($msg);
+
+                if($msg == '') continue;
+                $data['msg'] = $msg;
+                dump($data);
+                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
             } else {
                 $result = '';
                 $responseArray = json_decode($webshippy_main_response, true);
@@ -99,7 +108,10 @@ class WebshippyOrdersController extends Controller
                 $result = rtrim($result, ', ');
 
                 $result = substr($result, 0, 2000);
-                DiscordAlert::message($result);
+                // DiscordAlert::message($result);
+
+                $data['msg'] = $result;
+                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
             }
 
 
