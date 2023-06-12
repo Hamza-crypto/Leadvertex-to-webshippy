@@ -128,9 +128,10 @@ class WebhookController extends Controller
                 app('log')->channel('webhooks')->info($response->json());
 
                 $response = json_decode($response);
-                WebshippyOrders::create([
+                WebshippyOrders::updateOrCreate([
                     'order_id' => $response->wspyId
-                    ]
+                ],
+                ['status' => 'new']
                 );
 
                 $data_array['msg'] = sprintf("New order created on Webshippy with order no. %s", $response->wspyId);
