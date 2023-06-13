@@ -23,7 +23,7 @@ class WebshippyOrdersController extends Controller
         $orders = WebshippyOrders::where('status', 'new')
             ->whereDate('created_at', '<',  $threeDaysAgo)
             ->whereDate('updated_at', '<',  $oneDaysAgo)
-            ->take(20)
+            ->take(30)
             ->get();
 
         foreach ($orders as $order) {
@@ -65,14 +65,17 @@ class WebshippyOrdersController extends Controller
                 }
 
                 $response_array = $webshippy_response->result[0];
+
                 $order_status = $response_array->status;
+                $lead_vertex_id =  $response_array->referenceId;
+                $lead_vertex_id = substr($lead_vertex_id, strpos($lead_vertex_id, '#') + 1);
+                $payment_status = $response_array->paymentStatus;
+                $cod_status = $response_array->codStatus;
 
                 if ($order_status == 'new') {
                     dump('Order is new');
                     continue;
                 } elseif ($order_status == 'refused') {
-                    $lead_vertex_id =  $response_array->referenceId;
-                    $lead_vertex_id = substr($lead_vertex_id, strpos($lead_vertex_id, '#') + 1);
 
                     $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
                     if ($lv_response_status == 'OK') {
@@ -82,12 +85,26 @@ class WebshippyOrdersController extends Controller
 
                     $msg = sprintf("Webshippy Order %s refused : Order status updated on Leadvertex ID %d", $order->order_id, $lead_vertex_id);
                 } elseif ($order_status == 'fulfilled') {
-                    $payment_status = $response_array->paymentStatus;
-                    $cod_status = $response_array->codStatus;
+
                     if ($payment_status == 'paid' && $cod_status == 'received') {
+                        // Paid in LV
+                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
+                        if ($lv_response_status == 'OK') {
+                            $order->delete();
+                            dump('Order Deleted from DB after updating on LV');
+                        }
+
                         dump('Order deleted, Fulfilled and Paid');
                         $order->delete();
                         $msg = sprintf("Webshippy Order %s fulfilled", $order->order_id);
+                    }
+                    else{
+                        // Sent to
+                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
+                        if ($lv_response_status == 'OK') {
+                            $order->delete();
+                            dump('Order Deleted from DB after updating on LV');
+                        }
                     }
                 }
 
