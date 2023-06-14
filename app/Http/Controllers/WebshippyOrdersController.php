@@ -16,18 +16,16 @@ class WebshippyOrdersController extends Controller
         $data['to'] = 'webshippy';
         $url = sprintf("%s/GetOrder/json", env('WEBSHIPPY_API_URL'));
 
-        $count = 1;
-        $threeDaysAgo = Carbon::now()->subDays(3);
-        $oneDaysAgo = Carbon::now()->subDays(1);
+        $twoDaysAgo = Carbon::now()->subDays(2);
+        $oneDaysAgo = Carbon::now()->subDay();
 
         $orders = WebshippyOrders::where('status', 'new')
-            ->whereDate('created_at', '<',  $threeDaysAgo)
-            ->whereDate('updated_at', '<',  $oneDaysAgo)
-            ->take(30)
+            ->whereDate('created_at', '<', $twoDaysAgo)
+            ->whereDate('updated_at', '<', $oneDaysAgo)
+            ->take(25)
             ->get();
 
         foreach ($orders as $order) {
-            // sleep(2);
             $order->touch();
             $msg = "";
             $request_body = [
@@ -52,7 +50,6 @@ class WebshippyOrdersController extends Controller
 
             $webshippy_response = json_decode($webshippy_main_response);
             app('log')->channel('webshippy')->info($webshippy_main_response->json());
-            $count++;
 
             $status = $webshippy_response->status;
             if ($status == 'success') {
@@ -67,53 +64,46 @@ class WebshippyOrdersController extends Controller
                 $response_array = $webshippy_response->result[0];
 
                 $order_status = $response_array->status;
-                $lead_vertex_id =  $response_array->referenceId;
+                $lead_vertex_id = $response_array->referenceId;
                 $lead_vertex_id = substr($lead_vertex_id, strpos($lead_vertex_id, '#') + 1);
                 $payment_status = $response_array->paymentStatus;
-                $cod_status = $response_array->codStatus;
 
                 if ($order_status == 'new') {
                     dump('Order is new');
                     continue;
                 } elseif ($order_status == 'refused') {
 
-                    $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
+                    $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id, 'refused');
                     if ($lv_response_status == 'OK') {
                         $order->delete();
                         dump('Order Deleted from DB after updating on LV');
                     }
 
-                    $msg = sprintf("Webshippy Order %s refused : Order status updated on Leadvertex ID %d", $order->order_id, $lead_vertex_id);
+                    $msg = sprintf("Webshippy Order %s refused : Leadvertex status %d RETURN", $order->order_id, $lead_vertex_id);
                 } elseif ($order_status == 'fulfilled') {
 
-                    if ($payment_status == 'paid' && $cod_status == 'received') {
+                    if ($payment_status == 'paid') {
                         // Paid in LV
-                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
+                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id, 'paid');
                         if ($lv_response_status == 'OK') {
                             $order->delete();
-                            dump('Order Deleted from DB after updating on LV');
+                            dump('Order deleted, Fulfilled and Paid');
+                            $msg = sprintf("Webshippy Order %s paid : Leadvertex status %d PAID", $order->order_id, $lead_vertex_id);
                         }
-
-                        dump('Order deleted, Fulfilled and Paid');
-                        $order->delete();
-                        $msg = sprintf("Webshippy Order %s fulfilled", $order->order_id);
-                    }
-                    else{
+                    } elseif ($payment_status == 'pending') {
                         // Sent to
-                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id);
+                        $lv_response_status = $this->update_status_on_leadvertex($lead_vertex_id, 'fulfilled');
                         if ($lv_response_status == 'OK') {
-                            $order->delete();
-                            dump('Order Deleted from DB after updating on LV');
+                            dump('Order status SENT TO');
+                            $msg = sprintf("Webshippy Order %s fulfilled : Leadvertex status %d SENT-TO", $order->order_id, $lead_vertex_id);
                         }
                     }
                 }
-
-                // DiscordAlert::message($msg);
-
-                if($msg == '') continue;
+                if ($msg == '') continue;
                 $data['msg'] = $msg;
                 dump($data);
                 Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
+//                DiscordAlert::message($msg);
             } else {
                 $result = '';
                 $responseArray = json_decode($webshippy_main_response, true);
@@ -124,24 +114,30 @@ class WebshippyOrdersController extends Controller
                 $result = rtrim($result, ', ');
 
                 $result = substr($result, 0, 2000);
-                // DiscordAlert::message($result);
 
                 $data['msg'] = $result;
                 Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
+//                DiscordAlert::message($result);
             }
 
 
         }
     }
 
-    function update_status_on_leadvertex($lead_vertex_id){
+    function update_status_on_leadvertex($lead_vertex_id, $status)
+    {
+        $statuses = [
+            'fulfilled' => 3, //Sent to
+            'paid' => 5, //Paid
+            'refused' => 7, //Return
+        ];
 
         $url = sprintf("%s/updateOrder.html?token=%s&id=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $lead_vertex_id);
 
         $request_body = [
-            'status' => 7 // 7 = Return
+            'status' => $statuses[$status]
         ];
-
+        dump($request_body);
         $lv_response = Http::withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded'
         ])->asForm()->post($url, $request_body);
@@ -149,6 +145,5 @@ class WebshippyOrdersController extends Controller
         $lv_response = json_decode($lv_response);
 
         return $lv_response->$lead_vertex_id;
-
     }
 }

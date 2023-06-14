@@ -15,7 +15,6 @@ class WebhookController extends Controller
 {
     function store(Request $request)
     {
-
         $data = $request->all();
 
         app('log')->channel('webhooks')->info($data);
@@ -32,10 +31,11 @@ class WebhookController extends Controller
         try{
             $response = Http::get($url);
 
-            ProductWebhook::create([
-                'product_id' => $data['id'],
-                'response' => $response
-            ]);
+            // This job is now done by telescope
+//            ProductWebhook::create([
+//                'product_id' => $data['id'],
+//                'response' => $response
+//            ]);
 
             $response = json_decode($response);
 
@@ -134,7 +134,7 @@ class WebhookController extends Controller
                 ['status' => 'new']
                 );
 
-                $data_array['msg'] = sprintf("New order created on Webshippy with order no. %s", $response->wspyId);
+                $data_array['msg'] = sprintf("Webshippy new order: %s", $response->wspyId);
                 Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
 
                 return $response;
