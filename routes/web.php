@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Notification;
 */
 
 Route::get('/test', function () {
-    $result = "This is just test page 2" . time();
+    $result = "This is just test page" . time();
     echo  $result;
     DiscordAlert::message($result);
 });
