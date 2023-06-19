@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Notification;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::view('/', 'welcome');
 
 Route::get('/test', function () {
     $result = "This is just test page" . time();
