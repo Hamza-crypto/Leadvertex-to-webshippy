@@ -147,4 +147,36 @@ class WebshippyOrdersController extends Controller
 
         return $lv_response->$lead_vertex_id;
     }
+
+    public function chartData()
+    {
+        $endDate = Carbon::today();
+        $startDate = $endDate->copy()->subDays(6);
+
+        $data = WebshippyOrders::whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('created_at')
+            ->get();
+
+        $labels = $data->pluck('created_at')->map(function ($date) {
+            return $date->format('Y-m-d');
+        });
+
+        $createdCount = $data->groupBy(function ($item) {
+            return $item->created_at->format('Y-m-d');
+        })->map(function ($group) {
+            return $group->count();
+        });
+
+        $updatedCount = $data->groupBy(function ($item) {
+            return $item->updated_at->format('Y-m-d');
+        })->map(function ($group) {
+            return $group->count();
+        });
+
+        return response()->json([
+            'labels' => $labels,
+            'createdData' => $createdCount,
+            'updatedData' => $updatedCount,
+        ]);
+    }
 }

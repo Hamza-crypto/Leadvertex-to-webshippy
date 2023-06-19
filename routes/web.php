@@ -35,4 +35,9 @@ Route::controller(WebhookController::class)->group(function () {
 
 Route::controller(WebshippyOrdersController::class)->group(function () {
     Route::get('get_webshippy_orders', 'UpdateOrders');
+    Route::get('/chart-data', 'chartData')->name('chart.data');
 });
+
+Route::get('/chart', function () {
+    return view('chart');
+})->name('chart');
