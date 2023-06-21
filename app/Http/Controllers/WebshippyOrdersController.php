@@ -150,10 +150,9 @@ class WebshippyOrdersController extends Controller
 
     public function chartData()
     {
-        $endDate = Carbon::today();
-        $startDate = $endDate->copy()->subDays(6);
+        $startDate = Carbon::today()->subDays(6);
 
-        $data = WebshippyOrders::whereBetween('created_at', [$startDate, $endDate])
+        $data = WebshippyOrders::where('created_at', '>',  $startDate)
             ->orderBy('created_at')
             ->get();
 
