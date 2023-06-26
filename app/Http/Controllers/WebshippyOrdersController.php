@@ -13,6 +13,9 @@ class WebshippyOrdersController extends Controller
 {
     function UpdateOrders()
     {
+        /*
+         * This function checks order status from Webshippy
+         */
         $data['to'] = 'webshippy';
         $url = sprintf("%s/GetOrder/json", env('WEBSHIPPY_API_URL'));
 

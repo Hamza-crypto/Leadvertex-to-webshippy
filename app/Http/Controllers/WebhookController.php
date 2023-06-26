@@ -15,6 +15,9 @@ class WebhookController extends Controller
 {
     function store(Request $request)
     {
+        /*
+         * This function get webhook from LV when order status is "accepted", and creates new order on Webshippy
+         */
         $data = $request->all();
 
         app('log')->channel('webhooks')->info($data);
@@ -30,6 +33,7 @@ class WebhookController extends Controller
 
         try{
             $response = Http::get($url);
+            $response = json_decode($response);
 
             // This job is now done by telescope
 //            ProductWebhook::create([
@@ -37,10 +41,10 @@ class WebhookController extends Controller
 //                'response' => $response
 //            ]);
 
-            $response = json_decode($response);
 
-    //            $json = file_get_contents(public_path('vertex.json'));
-    //            $response = json_decode($json);
+
+//            $json = file_get_contents(public_path('vertex.json'));
+//            $response = json_decode($json);
 
             $subtotal = 0;
             $total_number_of_products = 0;
@@ -70,6 +74,10 @@ class WebhookController extends Controller
                     $shippingPrice = 3500;
                 }
 
+                $phoneNumber = $order->phone ?? '';
+                if (strpos($phoneNumber, '36') === 0) {
+                    $phoneNumber = '+' . $phoneNumber;
+                }
 
                 $request_body = [
                     'apiKey' => env('TOKEN'),
@@ -79,7 +87,7 @@ class WebhookController extends Controller
                         'shipping' => [
                             'name' => $order->fio,
                             'email' => $order->email,
-                            'phone' => $order->phone ?? "",
+                            'phone' => $phoneNumber,
                             'countryCode' => $order->country,
                             'zip' => $order->postIndex,
                             'city' => $order->city,
@@ -90,7 +98,7 @@ class WebhookController extends Controller
                         'billing' => [
                             'name' => $order->fio,
                             'email' => $order->email,
-                            'phone' => $order->phone ?? "",
+                            'phone' => $phoneNumber,
                             'countryCode' => $order->country,
                             'zip' => $order->postIndex,
                             'city' => $order->city,
