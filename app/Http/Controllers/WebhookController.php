@@ -27,7 +27,11 @@ class WebhookController extends Controller
         $data_array['to'] = 'webshippy';
         $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id'] );
 
-        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        try{
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        }
+        catch (\Exception $e){
+        }
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
 
@@ -143,7 +147,11 @@ class WebhookController extends Controller
                 );
 
                 $data_array['msg'] = sprintf("Webshippy new order: %s", $response->wspyId);
-                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+                try {
+                    Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+                }
+                catch (\Exception $e){
+                }
 
                 return $response;
             }
