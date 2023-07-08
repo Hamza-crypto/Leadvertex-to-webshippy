@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('check:webshippy-order-status')->everyMinute();
         $schedule->command('telescope:prune --hours=168')->daily();
+        $schedule->command('test:cron')->everyMinute();
     }
 
     /**
