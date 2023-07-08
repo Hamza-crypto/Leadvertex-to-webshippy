@@ -86,7 +86,7 @@ class WebhookController extends Controller
                 $request_body = [
                     'apiKey' => env('TOKEN'),
                     'order' => [
-                        'referenceId' => "LV#" . $data['id'],
+                        'referenceId' => "LV2#" . $data['id'],
                         'createdAt' => $order->datetime,
                         'shipping' => [
                             'name' => $order->fio,
