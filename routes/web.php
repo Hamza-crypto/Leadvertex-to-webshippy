@@ -21,13 +21,13 @@ use Illuminate\Support\Facades\Notification;
 Route::view('/', 'welcome');
 
 Route::get('/test', function () {
-    $result = "This is just test page" . time();
+    $result = "This is just test page for LV2 " . time();
     echo  $result;
     DiscordAlert::message($result);
 });
 
 Route::controller(WebhookController::class)->group(function () {
-    Route::post('leadvertex/webhook', 'store'); // LV status: ACCEPTED
+    Route::post('leadvertex/status-change', 'store'); // LV status: ACCEPTED
     Route::post('leadvertex-all-orders/webhook', 'createRecordOnComnica'); // LV New Order
     // Route::get('createRecordOnComnica', 'sendData');
 
