@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlockedUser;
 use App\Models\ProductMapping;
-use App\Models\ProductWebhook;
 use App\Models\WebshippyOrders;
+use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\LeadVertexNotification;
-use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 class WebhookController extends Controller
 {
-    function store(Request $request)
+    public function store(Request $request)
     {
         /*
          * This function get webhook from LV when order status is "accepted", and creates new order on Webshippy
@@ -21,21 +20,22 @@ class WebhookController extends Controller
         $data = $request->all();
 
         app('log')->channel('webhooks')->info($data);
-        if ($data['status'] != 'accepted') return;
+        if ($data['status'] != 'accepted') {
+            return;
+        }
 
         dump($data);
         $data_array['to'] = 'webshippy';
-        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id'] );
+        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id']);
 
-        try{
+        try {
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
-        }
-        catch (\Exception $e){
+        } catch (\Exception $e) {
         }
 
         $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
 
-        try{
+        try {
             $response = Http::get($url);
             $response = json_decode($response);
 
@@ -44,8 +44,6 @@ class WebhookController extends Controller
 //                'product_id' => $data['id'],
 //                'response' => $response
 //            ]);
-
-
 
 //            $json = file_get_contents(public_path('vertex.json'));
 //            $response = json_decode($json);
@@ -57,17 +55,19 @@ class WebhookController extends Controller
 
                 foreach ($order->goods as $product) {
                     $product_sku = ProductMapping::where('product_id_lv', $product->goodID)->first();
-                    if (!$product_sku) continue;
+                    if (!$product_sku) {
+                        continue;
+                    }
 
                     $products[] = [
                         'sku' => $product_sku->webshippy_sku,
                         'productName' => $product->name,
                         'priceGross' => $product->price,
                         'vat' => 0.27,
-                        'quantity' => $product->quantity
+                        'quantity' => $product->quantity,
                     ];
                     $subtotal += $product->price * $product->quantity;
-                    $total_number_of_products+= $product->quantity;
+                    $total_number_of_products += $product->quantity;
                 }
 
                 if ($total_number_of_products > 2) {
@@ -97,7 +97,7 @@ class WebhookController extends Controller
                             'city' => $order->city,
                             'country' => $order->country,
                             'address1' => $order->address,
-                            'note' => $order->comment
+                            'note' => $order->comment,
                         ],
                         'billing' => [
                             'name' => $order->fio,
@@ -107,7 +107,7 @@ class WebhookController extends Controller
                             'zip' => $order->postIndex,
                             'city' => $order->city,
                             'country' => $order->country,
-                            'address1' => $order->address
+                            'address1' => $order->address,
 
                         ],
                         'payment' => [
@@ -118,10 +118,10 @@ class WebhookController extends Controller
                             "shippingPrice" => $shippingPrice,
                             'shippingVat' => 0,
                             'currency' => "HUF",
-                            'discount' => 0
+                            'discount' => 0,
                         ],
-                        'products' => $products
-                    ]
+                        'products' => $products,
+                    ],
                 ];
 
                 $request_body['order']['payment']['shippingPrice'] = $shippingPrice; //if quantity > 2, then set shipping price to 0
@@ -131,9 +131,8 @@ class WebhookController extends Controller
                 $request_body = ['request' => json_encode($request_body)];
 
                 $response = Http::withHeaders([
-                    'Content-Type' => 'application/x-www-form-urlencoded'
+                    'Content-Type' => 'application/x-www-form-urlencoded',
                 ])->asForm()->post($url, $request_body);
-
 
                 dump($response->json());
 
@@ -141,30 +140,28 @@ class WebhookController extends Controller
 
                 $response = json_decode($response);
                 WebshippyOrders::updateOrCreate([
-                    'order_id' => $response->wspyId
+                    'order_id' => $response->wspyId,
                 ],
-                ['status' => 'new']
+                    ['status' => 'new']
                 );
 
                 $data_array['msg'] = sprintf("Webshippy new order: %s", $response->wspyId);
                 try {
                     Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
-                }
-                catch (\Exception $e){
+                } catch (\Exception $e) {
                 }
 
                 return $response;
             }
-        }
-
-        catch (\Exception $e){
+        } catch (\Exception $e) {
             $data_array['msg'] = $e->getMessage() . " WebhookController line 145";
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         }
 
     }
 
-    public function createRecordOnComnica(Request $request){
+    public function createRecordOnComnica(Request $request)
+    {
         $data = $request->all();
         $msg = "";
 
@@ -181,21 +178,36 @@ class WebhookController extends Controller
         $response = json_decode($response);
 
         foreach ($response as $order) {
-                $name = $order->fio;
-                $phone = $order->phone;
-                $productName = "";
+            $name = $order->fio;
+            $phone = $order->phone;
+            $productName = "";
 
-                foreach ($order->goods as $product) {
-                    $productName .= $product->name . ',';
+            $isBlocked = BlockedUser::where('phone', $phone)->first();
+
+            if ($isBlocked) {
+                $response_id = $this->mark_as_spam_on_leadvertex($data['id']);
+
+                if ($response_id == "OK") {
+                    $data_array['to'] = 'comnica';
+                    $data_array['msg'] = sprintf("Order %s marked as spam on Leadvertex: ", $data['id']);
+                    Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+                    return 0;
                 }
+
+            }
+
+            foreach ($order->goods as $product) {
+                $productName .= $product->name . ',';
+            }
 
         }
 
-         $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
+        $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
 
     }
 
-    public function sendData($name, $phone, $productName, $id, $date, $msg){
+    public function sendData($name, $phone, $productName, $id, $date, $msg)
+    {
 
         $data_array['to'] = 'comnica';
 
@@ -229,8 +241,8 @@ class WebhookController extends Controller
                         'preferred' => true,
                         'priority' => 1,
                         'source_column' => 'phone',
-                        'type' => 'phone'
-                    ]
+                        'type' => 'phone',
+                    ],
                 ],
                 'custom_data' => [
                     'name' => $name,
@@ -246,19 +258,18 @@ class WebhookController extends Controller
                     'manual_redial' => null,
                     'next_call' => null,
                     'priority' => 1,
-                    'project_id' => 76
-                ]
-            ]
+                    'project_id' => 76,
+                ],
+            ],
         ];
 
-        $response = Http::withBasicAuth(env('COMNICA_USER'), env('COMNICA_PASS'))->post( env('COMNICA_API_URL') .  '/integration/cc/record/save/v1', $data);
+        $response = Http::withBasicAuth(env('COMNICA_USER'), env('COMNICA_PASS'))->post(env('COMNICA_API_URL') . '/integration/cc/record/save/v1', $data);
         //$response = file_get_contents(public_path('comnica.json'));
 
         $main_response = json_decode($response);
         #run loop on response->json and create string for each array element
 
-
-        if(isset($main_response->payload->errors)){
+        if (isset($main_response->payload->errors)) {
 
             $responseArray = json_decode($response, true);
             foreach ($responseArray as $key => $value) {
@@ -268,8 +279,7 @@ class WebhookController extends Controller
             $result = rtrim($result, ', ');
 
             $result = substr($result, 0, 2000);
-        }
-        else{
+        } else {
             $result .= " Comnica ID: ";
             $result .= $main_response->payload->id;
         }
@@ -280,6 +290,20 @@ class WebhookController extends Controller
 
     }
 
+    public function mark_as_spam_on_leadvertex($lead_vertex_id)
+    {
+        $url = sprintf("%s/updateOrder.html?token=%s&id=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $lead_vertex_id);
+
+        $request_body = [
+            'status' => 9, // Spam/Errors
+        ];
+        $lv_response = Http::withHeaders([
+            'Content-Type' => 'application/x-www-form-urlencoded',
+        ])->asForm()->post($url, $request_body);
+
+        $lv_response = json_decode($lv_response);
+
+        return $lv_response->$lead_vertex_id;
+    }
 
 }
-
