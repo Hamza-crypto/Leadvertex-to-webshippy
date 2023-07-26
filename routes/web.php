@@ -37,6 +37,7 @@ Route::controller(WebshippyOrdersController::class)->group(function () {
 });
 
 Route::controller(BlockedUserController::class)->group(function () {
+    Route::get('blocked_users', 'index');
     Route::get('block/{id}', 'blockUser');
 });
 

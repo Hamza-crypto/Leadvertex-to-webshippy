@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Http;
 
 class BlockedUserController extends Controller
 {
+    public function index()
+    {
+        $phoneNumbers = BlockedUser::pluck('phone')->all();
+        return json_encode($phoneNumbers);
+    }
+
     public function blockUser($id)
     {
         $leadvertex_id = $id;
