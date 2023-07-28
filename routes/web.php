@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BlockedUserController;
+use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,11 @@ Route::controller(WebshippyOrdersController::class)->group(function () {
 Route::controller(BlockedUserController::class)->group(function () {
     Route::get('blocked_users', 'index');
     Route::get('block/{id}', 'blockUser');
+});
+
+Route::controller(LeadvertexOrdersController::class)->group(function () {
+    Route::post('orders', 'store');
+    Route::get('thankyou', 'thankyou');
 });
 
 Route::get('/chart', function () {

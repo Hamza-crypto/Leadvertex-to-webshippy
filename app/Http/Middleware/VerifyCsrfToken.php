@@ -13,6 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'leadvertex/webhook',
-        'leadvertex-all-orders/webhook'
+        'leadvertex-all-orders/webhook',
+        'orders',
     ];
 }
