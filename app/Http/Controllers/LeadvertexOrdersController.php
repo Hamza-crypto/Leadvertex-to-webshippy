@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadVertexNotification;
 
 class LeadvertexOrdersController extends Controller
 {
@@ -34,6 +36,14 @@ class LeadvertexOrdersController extends Controller
 
         $webhookcontroller = new WebhookController();
         $webhookcontroller->mark_as_spam_on_leadvertex($newRecordId);
+
+        $data['msg'] = "New Order created with id: " . $newRecordId;
+
+        try {
+            $data['to'] = 'webshippy';
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
+        } catch (\Exception $e) {
+        }
 
         return view('thankyou');
 
