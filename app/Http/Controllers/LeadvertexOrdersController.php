@@ -18,6 +18,7 @@ class LeadvertexOrdersController extends Controller
                 [
                     'goodID' => $request->product_id,
                     'quantity' => 1,
+                    'price' => $request->price,
                 ],
 
             ],
