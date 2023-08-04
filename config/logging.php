@@ -126,6 +126,11 @@ return [
         'webshippy' => [
             'driver' => 'single',
             'path' => storage_path('logs/webshippy.log'),
+        ], 
+        
+        'new_orders' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/new_orders.log'),
         ],
     ],
 

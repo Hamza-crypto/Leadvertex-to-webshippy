@@ -28,6 +28,7 @@ class LeadvertexOrdersController extends Controller
         ])->asForm()->post($url, $request_body);
 
         $responseData = $lv_response->json();
+        app('log')->channel('new_orders')->info($responseData);
         $newRecordId = array_key_first($responseData);
 
         $webhookcontroller = new WebhookController();
