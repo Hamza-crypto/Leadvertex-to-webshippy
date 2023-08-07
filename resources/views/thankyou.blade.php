@@ -204,7 +204,20 @@
     }
     </style>
 
-</head>
+    <head>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10994850109"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', 'AW-10994850109');
+        </script>
+
+    </head>
 
 <body>
     <div id="wrapper">
