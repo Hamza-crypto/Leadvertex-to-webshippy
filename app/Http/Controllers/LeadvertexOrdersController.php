@@ -33,8 +33,6 @@ class LeadvertexOrdersController extends Controller
 
         $responseData = $lv_response->json();
 
-        return response()->json($responseData);
-
 
         if (is_null($responseData)) {
             $data['msg'] = "Something went wrong with Leadvertex on product ID: " . $request->product_id;
@@ -42,11 +40,15 @@ class LeadvertexOrdersController extends Controller
             abort(500);
         }
 
+        if(isset($responseData['error'])){
+            return response()->json(['error' => 1]);
+        }
+
         app('log')->channel('new_orders')->info($responseData);
         $newRecordId = array_key_first($responseData);
 
-        $webhookcontroller = new WebhookController();
-        $webhookcontroller->mark_as_spam_on_leadvertex($newRecordId);
+        // $webhookcontroller = new WebhookController();
+        // $webhookcontroller->mark_as_spam_on_leadvertex($newRecordId);
 
         $data['msg'] = "New Order created with id: " . $newRecordId;
         Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
