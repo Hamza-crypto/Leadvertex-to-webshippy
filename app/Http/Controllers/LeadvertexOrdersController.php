@@ -32,6 +32,10 @@ class LeadvertexOrdersController extends Controller
         ])->asForm()->post($url, $request_body);
 
         $responseData = $lv_response->json();
+
+        return response()->json($responseData);
+
+
         if (is_null($responseData)) {
             $data['msg'] = "Something went wrong with Leadvertex on product ID: " . $request->product_id;
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
@@ -47,7 +51,9 @@ class LeadvertexOrdersController extends Controller
         $data['msg'] = "New Order created with id: " . $newRecordId;
         Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data));
 
-        return view('thankyou');
+        return response()->json(['success' => 1]);
+
+        // return view('thankyou');
 
     }
 
