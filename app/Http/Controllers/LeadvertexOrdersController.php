@@ -26,6 +26,7 @@ class LeadvertexOrdersController extends Controller
                 ],
 
             ],
+            'utm_term' => $request->utm_term ?? ''
         ];
         $lv_response = Http::withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
