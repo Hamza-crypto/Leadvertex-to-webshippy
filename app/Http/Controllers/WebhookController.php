@@ -243,7 +243,7 @@ class WebhookController extends Controller
 
         }
 
-        $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
+        // $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
         $this->sendDataToVCC($name, $phone, $productName, $data['id'], $order->datetime, $msg);
 
     }
