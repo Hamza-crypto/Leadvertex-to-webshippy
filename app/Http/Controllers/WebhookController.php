@@ -24,7 +24,6 @@ class WebhookController extends Controller
             return;
         }
 
-        dump($data);
         $data_array['to'] = 'webshippy';
         $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id']);
 
@@ -37,8 +36,11 @@ class WebhookController extends Controller
 
         try {
             $response = Http::get($url);
-            $response = json_decode($response);
+            // $billingo = new BillingoController();
 
+            $response = json_decode($response);
+            // $billingo->createInvoice($response);
+            // dd('Stop');
             // This job is now done by telescope
 //            ProductWebhook::create([
 //                'product_id' => $data['id'],
@@ -160,6 +162,45 @@ class WebhookController extends Controller
 
     }
 
+    public function sendDataToVCC($name, $phone, $productName, $id, $date, $msg)
+    {
+
+        $data_array['to'] = 'comnica';
+
+        if (strlen($phone) == 9) {
+            $phone = "36" . $phone;
+        }
+
+        //If starting from 0, then append 3 at the begining
+        if (strlen($phone) > 11) {
+            $phone = substr($phone, -11);
+        }
+
+        if (substr($phone, 0, 1) === "0") {
+            $phone = "3" . substr($phone, 1);
+        }
+
+        $msg .= "Phone: ";
+        $msg .= $phone;
+        $msg .= " ";
+        $result = $msg;
+
+        $data = [
+            'name' => $name,
+            'phone' => $phone,  
+        ];
+
+        $response = Http::withBasicAuth(env('VCC_USER'), env('VCC_PASS'))->post(env('VCC_API_URL') . '/projects/1/records', $data);
+        //$response = file_get_contents(public_path('comnica.json'));
+
+        $main_response = json_decode($response);
+        #run loop on response->json and create string for each array element
+
+        $data_array['msg'] = $result;
+        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        // DiscordAlert::message($result);
+
+    }
     public function createRecordOnComnica(Request $request)
     {
         $data = $request->all();
@@ -203,6 +244,7 @@ class WebhookController extends Controller
         }
 
         $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
+        $this->sendDataToVCC($name, $phone, $productName, $data['id'], $order->datetime, $msg);
 
     }
 
