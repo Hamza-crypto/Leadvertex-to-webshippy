@@ -186,6 +186,7 @@ class WebhookController extends Controller
         $result = $msg;
 
         $data['form'] = [
+            'name' => $name,
             'product' => $productName,
             'order_id' => $id
         ];
