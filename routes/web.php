@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingoController;
 use App\Http\Controllers\BlockedUserController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\WebhookController;
@@ -18,6 +19,13 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 |
  */
 Route::view('/', 'welcome');
+
+Route::get('/test2', function () {
+    // $billingo = new BillingoController();
+    // $url = "/partners/1788573408";
+    // $response = $billingo->createPartner();
+    // echo $response;
+});
 
 Route::get('/test', function () {
     $result = "This is just test page" . time();
@@ -43,7 +51,6 @@ Route::controller(BlockedUserController::class)->group(function () {
 });
 
 Route::controller(LeadvertexOrdersController::class)->group(function () {
-    Route::post('orders', 'store');
     Route::get('thankyou', 'thankyou');
 });
 

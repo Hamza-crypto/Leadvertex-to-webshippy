@@ -14,6 +14,7 @@ class WebhookController extends Controller
 {
     public function store(Request $request)
     {
+        return 0;
         /*
          * This function get webhook from LV when order status is "accepted", and creates new order on Webshippy
          */

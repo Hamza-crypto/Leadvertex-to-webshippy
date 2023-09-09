@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Telegram\TelegramChannel;
@@ -19,24 +18,23 @@ class LeadVertexNotification extends Notification
         $this->msg = $msg;
     }
 
-
     public function via($notifiable)
     {
         return [TelegramChannel::class];
     }
 
-
-     public function toTelegram($notifiable)
+    public function toTelegram($notifiable)
     {
         $msg = $this->msg;
-        if($msg['to'] == 'webshippy'){
+        if ($msg['to'] == 'webshippy') {
             $telegram_id = env('TELEGRAM_WEBSHIPPY_ID');
-        }
-        else{
+        } elseif ($msg['to'] == 'billingo') {
+            $telegram_id = env('TELEGRAM_BILLINGO_ID');
+        } else {
             $telegram_id = env('TELEGRAM_COMNICA_ID');
         }
         return TelegramMessage::create()
-            // Optional recipient user id.
+        // Optional recipient user id.
             ->to($telegram_id)
             ->content($msg['msg']);
 
@@ -45,11 +43,10 @@ class LeadVertexNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
-
 
     public function toArray($notifiable)
     {
