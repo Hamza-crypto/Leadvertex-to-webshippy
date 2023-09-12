@@ -14,7 +14,6 @@ class WebhookController extends Controller
 {
     public function store(Request $request)
     {
-        
         /*
          * This function get webhook from LV when order status is updated and send postback to keitaro
          */
@@ -28,7 +27,7 @@ class WebhookController extends Controller
         }
 
         $data_array['to'] = 'keitaro';
-        $data_array['msg'] = sprintf("Leadvertex order no. aa status updated to ACCEPTED");
+        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id']);
 
         try {
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
@@ -41,11 +40,10 @@ class WebhookController extends Controller
             $response = Http::get($url);
             $response = json_decode($response);
 
-            //e4c1uk6bo&status=LEAD&status=SALE
             foreach ($response as $order) {
                 $utm_term = $order->utm_term;
                 
-                $keitaro_url = sprintf("%s%s?status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
+                $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
                 Http::post($keitaro_url);
             }
         } catch (\Exception $e) {
