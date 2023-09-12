@@ -25,9 +25,12 @@ class WebhookController extends Controller
         elseif ($data['status'] == 'spam') {
             $keitarostatus = 'Rejected';
         }
+        else{
+            return;
+        }
 
         $data_array['to'] = 'keitaro';
-        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to ACCEPTED", $data['id']);
+        $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to %s", $data['id'], $data['status']);
 
         try {
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
