@@ -14,6 +14,49 @@ class WebhookController extends Controller
 {
     public function store(Request $request)
     {
+        
+        /*
+         * This function get webhook from LV when order status is updated and send postback to keitaro
+         */
+        $data = $request->all();
+
+        if ($data['status'] == 'accepted') {
+            $keitarostatus = 'SALE';
+        }
+        elseif ($data['status'] == 'spam') {
+            $keitarostatus = 'Rejected';
+        }
+
+        $data_array['to'] = 'keitaro';
+        $data_array['msg'] = sprintf("Leadvertex order no. aa status updated to ACCEPTED");
+
+        try {
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        } catch (\Exception $e) {
+        }
+        
+        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
+    
+        try {
+            $response = Http::get($url);
+            $response = json_decode($response);
+
+            //e4c1uk6bo&status=LEAD&status=SALE
+            foreach ($response as $order) {
+                $utm_term = $order->utm_term;
+                
+                $keitaro_url = sprintf("%s%s?status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
+                Http::post($keitaro_url);
+            }
+        } catch (\Exception $e) {
+            $data_array['msg'] = $e->getMessage();
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        }
+
+    }
+
+    public function store_old(Request $request)
+    {
         return 0;
         /*
          * This function get webhook from LV when order status is "accepted", and creates new order on Webshippy

@@ -26,7 +26,9 @@ class LeadVertexNotification extends Notification
     public function toTelegram($notifiable)
     {
         $msg = $this->msg;
-        if ($msg['to'] == 'webshippy') {
+        if ($msg['to'] == 'keitaro') {
+            $telegram_id = env('TELEGRAM_KEITARO_ID');
+        } elseif ($msg['to'] == 'webshippy') {
             $telegram_id = env('TELEGRAM_WEBSHIPPY_ID');
         } elseif ($msg['to'] == 'billingo') {
             $telegram_id = env('TELEGRAM_BILLINGO_ID');
