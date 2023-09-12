@@ -44,7 +44,13 @@ class WebhookController extends Controller
             $response = json_decode($response);
 
             foreach ($response as $order) {
-                $utm_term = $order->utm_term;
+                if($order->utm_term != ''){
+                    $utm_term = $order->utm_term;
+                }
+                else{
+                    return response()->json(['UTM term not found']);
+                }
+                
                 
                 $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
                 Http::post($keitaro_url);
