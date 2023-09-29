@@ -36,9 +36,14 @@ class WebhookController extends Controller
             Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         } catch (\Exception $e) {
         }
-        
-        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
-    
+
+        $domain = env('LEADVERTEX_API_URL');
+        if($request->has('domain')){
+             $domain = env('LEADVERTEX_API_URL2');
+        }
+
+        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", $domain, env('TOKEN'), $data['id']);
+
         try {
             $response = Http::get($url);
             $response = json_decode($response);
@@ -50,8 +55,8 @@ class WebhookController extends Controller
                 else{
                     return response()->json(['UTM term not found']);
                 }
-                
-                
+
+
                 $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
                 Http::post($keitaro_url);
             }
@@ -241,11 +246,11 @@ class WebhookController extends Controller
             'termek' => $productName,
             'order_id' => $id
         ];
-        
+
         $data['contacts']['1'] = [
             'title' => 'customer',
             'name' => $name,
-            'phone' => $phone,  
+            'phone' => $phone,
         ];
 
         $response = Http::withBasicAuth(env('VCC_USER'), env('VCC_PASS'))->post(env('VCC_API_URL') . '/projects/5/records', $data);
@@ -259,7 +264,7 @@ class WebhookController extends Controller
         // DiscordAlert::message($result);
 
     }
-    public function createRecordOnComnica(Request $request)
+    public function createRecordOnVCC(Request $request)
     {
         $data = $request->all();
         $msg = "";
@@ -269,7 +274,12 @@ class WebhookController extends Controller
         Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         app('log')->channel('webhooks')->info($data);
 
-        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
+        $domain = env('LEADVERTEX_API_URL');
+        if($request->has('domain')){
+             $domain = env('LEADVERTEX_API_URL2');
+        }
+
+        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", $domain, env('TOKEN'), $data['id']);
 
         $response = Http::get($url);
         // $response = file_get_contents(public_path('vertex.json'));

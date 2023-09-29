@@ -35,7 +35,7 @@ Route::get('/test', function () {
 
 Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store'); // LV status: ACCEPTED
-    Route::post('leadvertex-all-orders/webhook', 'createRecordOnComnica'); // LV New Order
+    Route::post('leadvertex-all-orders/webhook', 'createRecordOnVCC'); // LV New Order
     // Route::get('createRecordOnComnica', 'sendData');
 
 });
