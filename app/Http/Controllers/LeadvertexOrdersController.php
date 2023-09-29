@@ -13,7 +13,12 @@ class LeadvertexOrdersController extends Controller
     {
         $data['to'] = 'webshippy';
 
-        $url = sprintf("%s/addOrder.html?token=%s", env('LEADVERTEX_API_URL'), env('TOKEN'));
+        $domain = env('LEADVERTEX_API_URL');
+        if($request->has('domain')){
+             $domain = env('LEADVERTEX_API_URL2');
+        }
+
+        $url = sprintf("%s/addOrder.html?token=%s", $domain, env('TOKEN'));
 
         $request_body = [
             'fio' => $request->name,
