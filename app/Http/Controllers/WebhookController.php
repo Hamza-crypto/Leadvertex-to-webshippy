@@ -56,9 +56,18 @@ class WebhookController extends Controller
                     return response()->json(['UTM term not found']);
                 }
 
+                try{
+                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
+                    Http::post($keitaro_url);
 
-                $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
-                Http::post($keitaro_url);
+                    //To new kietaro acount
+                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus);
+                    Http::post($keitaro_url);
+                }
+                catch(\Exception $e){
+                    return response()->json(['Something went wrong with Keitaro']);
+                }
+
             }
         } catch (\Exception $e) {
             $data_array['msg'] = $e->getMessage();
