@@ -51,7 +51,7 @@ class WebhookController extends Controller
             foreach ($response as $order) {
                 if($order->utm_term != ''){
                     $utm_term = $order->utm_term;
-                    $payout = $order->total;
+                    $payout = 0; //$order->total;
                 }
                 else{
                     return response()->json(['UTM term not found']);
