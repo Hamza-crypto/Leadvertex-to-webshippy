@@ -51,17 +51,18 @@ class WebhookController extends Controller
             foreach ($response as $order) {
                 if($order->utm_term != ''){
                     $utm_term = $order->utm_term;
+                    $payout = $order->total;
                 }
                 else{
                     return response()->json(['UTM term not found']);
                 }
 
                 try{
-                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus);
+                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
 
                     //To new kietaro acount
-                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus);
+                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
                 }
                 catch(\Exception $e){
