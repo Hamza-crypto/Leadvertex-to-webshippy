@@ -58,11 +58,11 @@ class WebhookController extends Controller
                 }
 
                 try{
-                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
+                    $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
 
                     //To new kietaro acount
-                    $keitaro_url = sprintf("%s%s&status=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, $payout);
+                    $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
                 }
                 catch(\Exception $e){
