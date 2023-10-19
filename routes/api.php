@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArkNetLeadsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LeadvertexOrdersController;
@@ -21,4 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::controller(LeadvertexOrdersController::class)->group(function () {
     Route::post('orders', 'store');
+});
+
+Route::controller(ArkNetLeadsController::class)->group(function () {
+    Route::post('arknet/leads', 'add_new_order'); //Get lead data from arknet and create new order on Leadvertex
 });
