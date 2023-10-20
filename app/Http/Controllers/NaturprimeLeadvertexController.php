@@ -31,7 +31,6 @@ class NaturprimeLeadvertexController extends Controller
             }
 
             $this->createRecordOnNaturprimeVCC($name, $phone, $productName, $data['id']);
-
         }
 
     }
@@ -39,7 +38,6 @@ class NaturprimeLeadvertexController extends Controller
 
     public function createRecordOnNaturprimeVCC($name, $phone, $productName, $id, $msg = "")
     {
-
         $data_array['to'] = 'naturprime_vcc';
 
         if (strlen($phone) == 9) {
@@ -74,9 +72,9 @@ class NaturprimeLeadvertexController extends Controller
 
         $response = Http::withBasicAuth(env('VCC_NATURE_USER'), env('VCC_NATURE_PASS'))->post(env('VCC_NATURE_API_URL') . '/projects/143/records', $data);
 
-        $data_array['msg'] = $this->convertResponseToString($response->json());
+        // $data_array['msg'] = $this->convertResponseToString($response->json());
 
-        Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+        // Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         // DiscordAlert::message($result);
 
     }

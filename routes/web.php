@@ -6,8 +6,10 @@ use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
+use App\Notifications\LeadVertexNotification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Notification;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 /*
@@ -27,9 +29,13 @@ Route::get('/clear_cache', function () {
     dump('Cache cleared successfully');
 });
 
-Route::get('/test', function () {
+Route::get('/test_notification', function () {
     $result = "This is just test page" . time();
     echo $result;
+    $data_array['to'] = "naturprime_vcc";
+    $data_array['msg'] = $result;
+    Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
+
     DiscordAlert::message($result);
 });
 
