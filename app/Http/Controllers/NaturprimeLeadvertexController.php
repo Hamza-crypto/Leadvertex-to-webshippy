@@ -74,10 +74,22 @@ class NaturprimeLeadvertexController extends Controller
 
         $response = Http::withBasicAuth(env('VCC_NATURE_USER'), env('VCC_NATURE_PASS'))->post(env('VCC_NATURE_API_URL') . '/projects/143/records', $data);
 
-        $data_array['msg'] = convertResponseToString($response->json());
+        $data_array['msg'] = $this->convertResponseToString($response->json());
 
         Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_array));
         // DiscordAlert::message($result);
 
+    }
+
+    function convertResponseToString($response)
+    {
+        $result = "";
+        foreach ($response as $key => $value) {
+            $result .= $key . ': ' . (is_array($value) ? json_encode($value) : $value) . ', ';
+        }
+
+        $result = rtrim($result, ', ');
+        $result = substr($result, 0, 2000);
+        return $result;
     }
 }
