@@ -6,6 +6,7 @@ use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
@@ -21,11 +22,9 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
  */
 Route::view('/', 'welcome');
 
-Route::get('/test2', function () {
-    // $billingo = new BillingoController();
-    // $url = "/partners/1788573408";
-    // $response = $billingo->createPartner();
-    // echo $response;
+Route::get('/clear_cache', function () {
+    Artisan::call('cache_clear');
+    dump('Cache cleared successfully');
 });
 
 Route::get('/test', function () {
