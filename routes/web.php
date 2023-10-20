@@ -23,7 +23,7 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 Route::view('/', 'welcome');
 
 Route::get('/clear_cache', function () {
-    Artisan::call('cache_clear');
+    Artisan::call('optimize:clear');
     dump('Cache cleared successfully');
 });
 
