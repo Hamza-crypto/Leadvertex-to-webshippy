@@ -23,7 +23,7 @@ class ArkNetLeadsController extends Controller
 
             ],
             'utm_term' => $request->subid ?? '',
-            'webmasterID ' => 10
+            'referer' => "arknet"
         ];
 
         $lv_response = Http::withHeaders([
@@ -31,5 +31,10 @@ class ArkNetLeadsController extends Controller
         ])->asForm()->post($url, $request_body);
 
         return $lv_response->json();
+    }
+
+    public function send_status_update(Request $request)
+    {
+
     }
 }
