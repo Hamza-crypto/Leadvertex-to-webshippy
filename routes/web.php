@@ -3,6 +3,7 @@
 use App\Http\Controllers\BillingoController;
 use App\Http\Controllers\BlockedUserController;
 use App\Http\Controllers\LeadvertexOrdersController;
+use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
 use Illuminate\Support\Facades\Route;
@@ -36,8 +37,13 @@ Route::get('/test', function () {
 Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store'); // LV status: ACCEPTED
     Route::post('leadvertex-all-orders/webhook', 'createRecordOnVCC'); // LV New Order
+    Route::post('webhook/arknet', 'store'); // New Order from Ark net
     // Route::get('createRecordOnComnica', 'sendData');
 
+});
+
+Route::controller(NaturprimeLeadvertexController::class)->group(function () {
+    Route::post('naturprime_leadvertex_new_order/webhook', 'new_order_created_webhook'); // LV New Order
 });
 
 Route::controller(WebshippyOrdersController::class)->group(function () {

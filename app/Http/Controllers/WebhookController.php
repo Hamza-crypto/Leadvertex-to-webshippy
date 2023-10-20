@@ -61,7 +61,7 @@ class WebhookController extends Controller
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
 
-                    //To new kietaro acount
+                    //To new kietaro account
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, 32); // $32 for each approved lead
                     Http::post($keitaro_url);
                 }
@@ -274,6 +274,7 @@ class WebhookController extends Controller
         // DiscordAlert::message($result);
 
     }
+
     public function createRecordOnVCC(Request $request)
     {
         $data = $request->all();
