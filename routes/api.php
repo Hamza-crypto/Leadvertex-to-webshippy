@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ArkNetLeadsController;
+use App\Http\Controllers\DarkLeadsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LeadvertexOrdersController;
@@ -26,4 +27,8 @@ Route::controller(LeadvertexOrdersController::class)->group(function () {
 
 Route::controller(ArkNetLeadsController::class)->group(function () {
     Route::post('arknet/leads', 'add_new_order'); //Get lead data from arknet and create new order on Leadvertex
+});
+
+Route::controller(DarkLeadsController::class)->group(function () {
+    Route::post('darkleads', 'add_new_order'); //Get lead data from arknet and create new order on Leadvertex
 });
