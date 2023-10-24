@@ -25,9 +25,6 @@ class WebhookController extends Controller
         elseif ($data['status'] == 'spam') {
             $keitarostatus = 'Rejected';
         }
-        else{
-            return;
-        }
 
         $data_array['to'] = 'keitaro';
         $data_array['msg'] = sprintf("Leadvertex order no. %s status updated to %s", $data['id'], $data['status']);
@@ -58,15 +55,23 @@ class WebhookController extends Controller
                 }
 
                 try{
+                    //Send status update to Arknet
+                    if($order->referer != ''){
+                        $arknetController = new ArkNetLeadsController();
+                        $arknetController->send_status_update($utm_term, $data['status']);
+                    }
+
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
 
                     //To new kietaro account
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, 32); // $32 for each approved lead
                     Http::post($keitaro_url);
+
+
                 }
                 catch(\Exception $e){
-                    return response()->json(['Something went wrong with Keitaro']);
+                    return response()->json([$e->getMessage()]);
                 }
 
             }

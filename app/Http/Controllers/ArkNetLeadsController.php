@@ -33,8 +33,20 @@ class ArkNetLeadsController extends Controller
         return $lv_response->json();
     }
 
-    public function send_status_update(Request $request)
+    public function send_status_update($subid, $status)
     {
+        if ($status == 'accepted') {
+            $arknetStatus = 'approve';
+        }
+        elseif ($status == 'spam') {
+            $arknetStatus = 'trash';
+        }
+        else{
+            $arknetStatus = 'reject';
+        }
 
+        $arknet_url = sprintf("%s%s&status=%s&wm=35", 'https://webhook.site/100d83cb-f46e-4780-a10e-d144325d48ca?', $subid, $arknetStatus);
+
+        Http::get($arknet_url);
     }
 }
