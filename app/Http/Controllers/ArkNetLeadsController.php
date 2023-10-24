@@ -45,7 +45,7 @@ class ArkNetLeadsController extends Controller
             $arknetStatus = 'reject';
         }
 
-        $arknet_url = sprintf("%s%s&status=%s&wm=35", 'https://webhook.site/100d83cb-f46e-4780-a10e-d144325d48ca?', $subid, $arknetStatus);
+        $arknet_url = sprintf("%s%s&status=%s&wm=35", env('ARKNET_BASE_URL'), $subid, $arknetStatus);
 
         Http::get($arknet_url);
     }
