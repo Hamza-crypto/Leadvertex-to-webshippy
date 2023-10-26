@@ -23,7 +23,11 @@ class ArbitrageUpLeadsController extends Controller
 
             ],
             'utm_term' => $request->subid ?? '',
-            'referer' => "arbitrage_up"
+            'referer' => "arbitrage_up",
+            'additional2' => $request->additional2 ?? '',
+            'additional1' => $request->additional1 ?? '',
+            'additional3' => $request->additional3 ?? '',
+
         ];
 
         $lv_response = Http::withHeaders([
