@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
-class ArkNetLeadsController extends Controller
+class ArbitrageUpLeadsController extends Controller
 {
     public function add_new_order(Request $request){
 
@@ -23,7 +23,7 @@ class ArkNetLeadsController extends Controller
 
             ],
             'utm_term' => $request->subid ?? '',
-            'referer' => "arknet"
+            'referer' => "arbitrage_up"
         ];
 
         $lv_response = Http::withHeaders([
@@ -36,17 +36,13 @@ class ArkNetLeadsController extends Controller
     public function send_status_update($subid, $status)
     {
         if ($status == 'accepted') {
-            $arknetStatus = 'approve';
+            $arbitrage_status = 'SALE';
         }
         elseif ($status == 'spam') {
-            $arknetStatus = 'trash';
-        }
-        else{
-            $arknetStatus = 'reject';
+            $arbitrage_status = 'Rejected';
         }
 
-        $arknet_url = sprintf("%s%s&status=%s&wm=36", env('ARKNET_BASE_URL'), $subid, $arknetStatus);
-
-        Http::get($arknet_url);
+        $arbitrage_url = sprintf("%s%s&status=%s&payout=36", env('ARBITRAGE_API_URL'), $subid, $arbitrage_status); // $32 for each approved lead
+        Http::post($arbitrage_url);
     }
 }

@@ -57,17 +57,20 @@ class WebhookController extends Controller
                 try{
                     //Send status update to Arknet
                     if($order->referer != ''){
-                        $arknetController = new ArkNetLeadsController();
-                        $arknetController->send_status_update($utm_term, $data['status']);
+                        if($order->referer == 'arknet'){
+                            $arknetController = new ArkNetLeadsController();
+                            $arknetController->send_status_update($utm_term, $data['status']);
+                        }
+
+                        if($order->referer == 'arbitrage_up'){
+                            $arbitrageController = new ArbitrageUpLeadsController();
+                            $arbitrageController->send_status_update($utm_term, $data['status']);
+                        }
+
                     }
 
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);
                     Http::post($keitaro_url);
-
-                    //To new kietaro account
-                    $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL2'), $utm_term, $keitarostatus, 32); // $32 for each approved lead
-                    Http::post($keitaro_url);
-
 
                 }
                 catch(\Exception $e){

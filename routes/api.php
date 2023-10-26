@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArbitrageUpLeadsController;
 use App\Http\Controllers\ArkNetLeadsController;
 use App\Http\Controllers\DarkLeadsController;
 use Illuminate\Http\Request;
@@ -25,10 +26,15 @@ Route::controller(LeadvertexOrdersController::class)->group(function () {
     Route::post('orders', 'store');
 });
 
+
+Route::controller(ArbitrageUpLeadsController::class)->group(function () {
+    Route::post('arbitrage/leads', 'add_new_order');
+});
+
 Route::controller(ArkNetLeadsController::class)->group(function () {
     Route::post('arknet/leads', 'add_new_order'); //Get lead data from arknet and create new order on Leadvertex
 });
 
 Route::controller(DarkLeadsController::class)->group(function () {
-    Route::post('darkleads', 'add_new_order'); //Get lead data from arknet and create new order on Leadvertex
+    Route::post('darkleads', 'add_new_order');
 });
