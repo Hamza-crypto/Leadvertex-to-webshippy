@@ -42,11 +42,11 @@ class ArbitrageUpLeadsController extends Controller
         if ($status == 'accepted') {
             $arbitrage_status = 'SALE';
         }
-        elseif ($status == 'spam') {
+        else{
             $arbitrage_status = 'Rejected';
         }
 
-        $arbitrage_url = sprintf("%s%s&status=%s&payout=36", env('ARBITRAGE_API_URL'), $subid, $arbitrage_status); // $32 for each approved lead
+        $arbitrage_url = sprintf("%s%s&status=%s&payout=36", env('ARBITRAGE_API_URL'), $subid, $arbitrage_status); // $36 for each approved lead
         Http::post($arbitrage_url);
     }
 }
