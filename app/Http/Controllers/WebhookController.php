@@ -236,7 +236,7 @@ class WebhookController extends Controller
 
     }
 
-    public function sendDataToVCC($name, $phone, $productName, $id, $date, $msg)
+    public function sendDataToVCC($name, $phone, $productName, $id, $date, $msg, $referer)
     {
 
         $data_array['to'] = 'comnica';
@@ -262,7 +262,8 @@ class WebhookController extends Controller
         $data['form'] = [
             'name' => $name,
             'termek' => $productName,
-            'order_id' => $id
+            'order_id' => $id,
+            'referer' => $referer ?? ''
         ];
 
         $data['contacts']['1'] = [
@@ -308,6 +309,7 @@ class WebhookController extends Controller
         foreach ($response as $order) {
             $name = $order->fio;
             $phone = $order->phone;
+            $referer= $order->referer;
             $productName = "";
 
             $isBlocked = BlockedUser::where('phone', $phone)->first();
@@ -331,7 +333,7 @@ class WebhookController extends Controller
         }
 
         // $this->sendData($name, $phone, $productName, $data['id'], $order->datetime, $msg);
-        $this->sendDataToVCC($name, $phone, $productName, $data['id'], $order->datetime, $msg);
+        $this->sendDataToVCC($name, $phone, $productName, $data['id'], $order->datetime, $msg, $referer);
 
     }
 
