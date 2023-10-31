@@ -263,7 +263,7 @@ class WebhookController extends Controller
             'name' => $name,
             'termek' => $productName,
             'order_id' => $id,
-            'referer' => $referer ?? ''
+            'termek2' => $referer ?? ''
         ];
 
         $data['contacts']['1'] = [
