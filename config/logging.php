@@ -132,6 +132,11 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/new_orders.log'),
         ],
+
+        'darkleads' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/darkleads.log'),
+        ],
     ],
 
 ];

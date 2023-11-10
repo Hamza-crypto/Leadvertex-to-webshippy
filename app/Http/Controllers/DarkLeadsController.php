@@ -58,19 +58,19 @@ class DarkLeadsController extends Controller
         return response()->json($response, $statusCode);
     }
 
-    public function send_status_update(Request $request) {
+    public function send_status_update($subid, $status) {
 
         if ($status == 'accepted') {
-            $arknetStatus = 'approve';
+            $darkLeadStatus = 'approve';
         }
         elseif ($status == 'spam') {
-            $arknetStatus = 'trash';
+            $darkLeadStatus = 'trash';
         }
         else{
-            $arknetStatus = 'reject';
+            $darkLeadStatus = 'reject';
         }
 
-        $darklead_url = sprintf("%s?barcode=%s&subid=%s&status=%s", env('DARKLEADS_BASE_URL'), env('DARKLEADS_BARCODE'), $subid, $arknetStatus);
+        $darklead_url = sprintf("%s?barcode=%s&subid=%s&status=%s", env('DARKLEADS_BASE_URL'), env('DARKLEADS_BARCODE'), $subid, $darkLeadStatus);
 
         Http::get($darklead_url);
     }
