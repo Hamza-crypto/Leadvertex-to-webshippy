@@ -60,14 +60,20 @@ class DarkLeadsController extends Controller
 
     public function send_status_update($subid, $status) {
 
-        if ($status == 'accepted') {
-            $darkLeadStatus = 'approve';
+        if ($status == 'processing') {
+            $darkLeadStatus = 'processing';
+        }
+        elseif ($status == 'accepted') {
+            $darkLeadStatus = 'accepted';
+        }
+        elseif ($status == 'canceled') {
+            $darkLeadStatus = 'cancelled';
         }
         elseif ($status == 'spam') {
-            $darkLeadStatus = 'trash';
+            $darkLeadStatus = 'spam';
         }
         else{
-            $darkLeadStatus = 'reject';
+            $darkLeadStatus = 'rejected';
         }
 
         $darklead_url = sprintf("%s?barcode=%s&subid=%s&status=%s", env('DARKLEADS_BASE_URL'), env('DARKLEADS_BARCODE'), $subid, $darkLeadStatus);
