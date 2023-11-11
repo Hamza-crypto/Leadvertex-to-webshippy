@@ -55,6 +55,8 @@ class DarkLeadsController extends Controller
 
         }
 
+        $this->send_status_update($request->subid, 'processing');
+
         return response()->json($response, $statusCode);
     }
 
