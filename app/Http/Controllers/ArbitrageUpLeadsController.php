@@ -34,12 +34,16 @@ class ArbitrageUpLeadsController extends Controller
             'Content-Type' => 'application/x-www-form-urlencoded',
         ])->asForm()->post($url, $request_body);
 
+        $this->send_status_update($request->subid, 'processing');
         return $lv_response->json();
     }
 
     public function send_status_update($subid, $status)
     {
-        if ($status == 'accepted') {
+        if ($status == 'processing') {
+            $arbitrage_status = 'Lead';
+        }
+        elseif ($status == 'accepted') {
             $arbitrage_status = 'SALE';
         }
         else{
@@ -47,6 +51,7 @@ class ArbitrageUpLeadsController extends Controller
         }
 
         $arbitrage_url = sprintf("%s%s&status=%s&payout=36", env('ARBITRAGE_API_URL'), $subid, $arbitrage_status); // $36 for each approved lead
+
         Http::post($arbitrage_url);
     }
 }
