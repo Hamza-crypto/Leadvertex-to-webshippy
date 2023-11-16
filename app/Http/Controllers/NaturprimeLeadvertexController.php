@@ -27,7 +27,7 @@ class NaturprimeLeadvertexController extends Controller
             $productName = "";
 
             foreach ($order->goods as $product) {
-                $productName .= $product->name . ',';
+                $productName .= sprintf("%s, %s pcs for %s", $product->name, $product->quantity, $product->price);
             }
 
             $this->createRecordOnNaturprimeVCC($name, $phone, $productName, $data['id']);
