@@ -6,6 +6,7 @@ use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
+use App\Http\Controllers\WebshopPriceController;
 use App\Notifications\LeadVertexNotification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -68,3 +69,11 @@ Route::controller(LeadvertexOrdersController::class)->group(function () {
 Route::get('/chart', function () {
     return view('chart');
 })->name('chart');
+
+
+/**
+ * Create public price list
+ */
+Route::controller(WebshopPriceController::class)->group(function () {
+    Route::get('product-list', 'index');
+});
