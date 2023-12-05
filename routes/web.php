@@ -76,4 +76,5 @@ Route::get('/chart', function () {
  */
 Route::controller(WebshopPriceController::class)->group(function () {
     Route::get('product-list', 'index');
+    Route::get('products', 'get_xml');
 });
