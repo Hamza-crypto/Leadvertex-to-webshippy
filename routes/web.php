@@ -26,8 +26,32 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 Route::view('/', 'welcome');
 
 Route::get('/clear_cache', function () {
+
+    dd(request()->all());
     Artisan::call('optimize:clear');
     dump('Cache cleared successfully');
+});
+
+Route::get('/arukereso_products', function () {
+
+    dump("Products without category");
+      $xmlFilePath = storage_path('products_arukereso.xml');
+        // Read XML file using simplexml_load_file
+        $xmlData = simplexml_load_file($xmlFilePath);
+
+        // Alternatively, you can use the XML facade in Laravel
+        // $xmlData = XML::load($xmlFilePath);
+
+        // Access XML data as an object
+        $count = 1;
+        foreach ($xmlData as $item) {
+            if(!$item->Category)
+
+
+            dump(sprintf("%d %s %s",$count,  $item->Identifier, $item->Category));
+            $count++;
+        }
+
 });
 
 Route::get('/test_notification', function () {
