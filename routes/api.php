@@ -6,6 +6,7 @@ use App\Http\Controllers\DarkLeadsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LeadvertexOrdersController;
+use App\Http\Controllers\RomLeadsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,4 +38,8 @@ Route::controller(ArkNetLeadsController::class)->group(function () {
 
 Route::controller(DarkLeadsController::class)->group(function () {
     Route::post('darkleads', 'add_new_order');
+});
+
+Route::controller(RomLeadsController::class)->group(function () {
+    Route::post('rom/leads', 'add_new_order');
 });

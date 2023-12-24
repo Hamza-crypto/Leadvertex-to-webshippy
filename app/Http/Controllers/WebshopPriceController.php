@@ -17,8 +17,21 @@ class WebshopPriceController extends Controller
 
     public function get_xml()
     {
-
         $xmlFilePath = storage_path('products.xml');
+
+        if (File::exists($xmlFilePath)) {
+            $content = File::get($xmlFilePath);
+            $response = response($content, 200)->header('Content-Type', 'text/xml');
+
+            return $response;
+        } else {
+            return response()->json(['message' => 'XML file not found']);
+        }
+    }
+
+    public function get_xml_for_arukereso()
+    {
+        $xmlFilePath = storage_path('products_arukereso.xml');
 
         if (File::exists($xmlFilePath)) {
             $content = File::get($xmlFilePath);

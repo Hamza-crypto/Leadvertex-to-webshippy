@@ -99,6 +99,7 @@ Route::get('/chart', function () {
  * Create public price list
  */
 Route::controller(WebshopPriceController::class)->group(function () {
-    Route::get('product-list', 'index');
+    Route::get('product-list', 'index'); //get products from Leadvertex
     Route::get('products', 'get_xml');
+    Route::get('products/arukereso', 'get_xml_for_arukereso');
 });
