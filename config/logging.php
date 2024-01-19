@@ -137,6 +137,11 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/darkleads.log'),
         ],
+
+        'zapier' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/zapier.log'),
+        ],
     ],
 
 ];

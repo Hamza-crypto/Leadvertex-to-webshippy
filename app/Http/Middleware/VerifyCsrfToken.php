@@ -15,6 +15,7 @@ class VerifyCsrfToken extends Middleware
         'leadvertex/webhook',
         'leadvertex-all-orders/webhook',
         'orders',
-        'naturprime_leadvertex_new_order/webhook'
+        'naturprime_leadvertex_new_order/webhook',
+        'zapier_fb_lead'
     ];
 }

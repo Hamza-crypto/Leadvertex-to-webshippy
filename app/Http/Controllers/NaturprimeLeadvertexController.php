@@ -16,7 +16,7 @@ class NaturprimeLeadvertexController extends Controller
     {
         $data = $request->all();
 
-        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('NATURPRIME_LEADVERTEX_API_URL'), env('TOKEN'), $data['id']);
+        $url = sprintf("%s/getOrdersByIds.html?token=%s&ids=%d", env('NATURPRIME_LEADVERTEX_API_URL'), env('NATURPRIME_LEADVERTEX_TOKEN'), $data['id']);
         $response = Http::get($url);
 
         $response = json_decode($response);
@@ -31,6 +31,14 @@ class NaturprimeLeadvertexController extends Controller
             }
 
             $this->createRecordOnNaturprimeVCC($name, $phone, $productName, $data['id']);
+
+            if($order->utm_term != '') {
+                $utm_term = $order->utm_term;
+                if($order->referer == 'arbitrage_up') {
+                    $arbitrageController = new ArbitrageUpLeadsController();
+                    $arbitrageController->send_status_update($utm_term, $data['status']);
+                }
+            }
         }
 
     }
@@ -79,7 +87,7 @@ class NaturprimeLeadvertexController extends Controller
 
     }
 
-    function convertResponseToString($response)
+    public function convertResponseToString($response)
     {
         $result = "";
         foreach ($response as $key => $value) {

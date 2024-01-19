@@ -7,6 +7,7 @@ use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
 use App\Http\Controllers\WebshopPriceController;
+use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
@@ -102,4 +103,8 @@ Route::controller(WebshopPriceController::class)->group(function () {
     Route::get('product-list', 'index'); //get products from Leadvertex
     Route::get('products', 'get_xml');
     Route::get('products/arukereso', 'get_xml_for_arukereso');
+});
+
+Route::controller(ZappierController::class)->group(function () {
+    Route::post('zapier_fb_lead', 'store');
 });
