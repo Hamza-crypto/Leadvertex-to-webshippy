@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BillingoController;
 use App\Http\Controllers\BlockedUserController;
+use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\WebhookController;
@@ -107,4 +108,9 @@ Route::controller(WebshopPriceController::class)->group(function () {
 
 Route::controller(ZappierController::class)->group(function () {
     Route::post('zapier_fb_lead', 'store');
+});
+
+Route::controller(FacebookWebhookController::class)->group(function () {
+    Route::get('/facebook/webhook', 'verify');
+    Route::post('/facebook/webhook', 'handleWebhook');
 });
