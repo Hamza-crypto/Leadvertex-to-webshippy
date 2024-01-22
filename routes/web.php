@@ -118,21 +118,13 @@ Route::controller(FacebookWebhookController::class)->group(function () {
 
 Route::get('/get-ip', function () {
         try {
-            $response = Http::get('https://icanhazip.com');
+            $ch = curl_init('https://icanhazip.com');
+            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $ip = trim(curl_exec($ch));
+            curl_close($ch);
 
-            if ($response->successful()) {
-                $ip = trim($response->body());
-
-                // Extract only the IPv4 address if an IPv6 address is present
-                $ipv4Address = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
-                if ($ipv4Address !== false) {
-                    return response()->json(['ip' => $ipv4Address]);
-                } else {
-                    return response()->json(['error' => 'No IPv4 address found'], 500);
-                }
-            } else {
-                return response()->json(['error' => 'Failed to retrieve IP. Status code: ' . $response->status()], 500);
-            }
+            return response()->json(['ip' => $ip]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
