@@ -11,6 +11,7 @@ use App\Http\Controllers\WebshopPriceController;
 use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Notification;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
@@ -116,6 +117,16 @@ Route::controller(FacebookWebhookController::class)->group(function () {
 });
 
 Route::get('/get-ip', function () {
-    $ip = request()->ip();
-    return "Server IP: " . $ip;
+        try {
+            $response = Http::get('https://icanhazip.com');
+
+            if ($response->successful()) {
+                $ip = trim($response->body());
+                return response()->json(['ip' => $ip]);
+            } else {
+                return response()->json(['error' => 'Failed to retrieve IP. Status code: ' . $response->status()], 500);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+        }
 });
