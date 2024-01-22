@@ -122,7 +122,14 @@ Route::get('/get-ip', function () {
 
             if ($response->successful()) {
                 $ip = trim($response->body());
-                return response()->json(['ip' => $ip]);
+
+                // Extract only the IPv4 address if an IPv6 address is present
+                $ipv4Address = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+                if ($ipv4Address !== false) {
+                    return response()->json(['ip' => $ipv4Address]);
+                } else {
+                    return response()->json(['error' => 'No IPv4 address found'], 500);
+                }
             } else {
                 return response()->json(['error' => 'Failed to retrieve IP. Status code: ' . $response->status()], 500);
             }
