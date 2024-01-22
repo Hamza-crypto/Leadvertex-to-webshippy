@@ -29,8 +29,9 @@ class NaturprimeLeadvertexController extends Controller
             foreach ($order->goods as $product) {
                 $productName .= sprintf("%s, %s pcs for %s", $product->name, $product->quantity, $product->price);
             }
+            $webmaster_name = $order->webmaster?->login ?? '';
 
-            $this->createRecordOnNaturprimeVCC($name, $phone, $productName, $data['id']);
+            $this->createRecordOnNaturprimeVCC($name, $phone, $productName, $data['id'], "",  $webmaster_name);
 
             if($order->utm_term != '') {
                 $utm_term = $order->utm_term;
@@ -44,7 +45,7 @@ class NaturprimeLeadvertexController extends Controller
     }
 
 
-    public function createRecordOnNaturprimeVCC($name, $phone, $productName, $id, $msg = "")
+    public function createRecordOnNaturprimeVCC($name, $phone, $productName, $id, $msg = "", $webmaster_name)
     {
         $data_array['to'] = 'naturprime_vcc';
 
@@ -69,7 +70,8 @@ class NaturprimeLeadvertexController extends Controller
         $data['form'] = [
             'name' => $name,
             'termek' => $productName,
-            'order_id' => $id
+            'order_id' => $id,
+            'webmasters' => $webmaster_name
         ];
 
         $data['contacts']['1'] = [
