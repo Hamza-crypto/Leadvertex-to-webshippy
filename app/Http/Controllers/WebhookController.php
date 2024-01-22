@@ -9,6 +9,7 @@ use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use NotificationChannels\Telegram\TelegramChannel;
 
 class WebhookController extends Controller
 {

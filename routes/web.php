@@ -114,3 +114,8 @@ Route::controller(FacebookWebhookController::class)->group(function () {
     Route::get('/facebook/webhook', 'verify');
     Route::post('/facebook/webhook', 'handleWebhook');
 });
+
+Route::get('/get-ip', function () {
+    $ip = request()->ip();
+    return "Server IP: " . $ip;
+});
