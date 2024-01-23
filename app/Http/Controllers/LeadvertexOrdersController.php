@@ -12,8 +12,6 @@ class LeadvertexOrdersController extends Controller
 {
     public function store(Request $request)
     {
-        $webmasterID = (int) $request->input('webmaster_id', 10);
-
         $data['to'] = 'webshippy';
 
         $domain = env('LEADVERTEX_API_URL');
@@ -35,7 +33,7 @@ class LeadvertexOrdersController extends Controller
 
             ],
             'utm_term' => $request->utm_term ?? '',
-            'webmasterID ' => $webmasterID
+            'webmasterID' => (int) $request->input('webmaster_id', 10)
         ];
         $lv_response = Http::withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
