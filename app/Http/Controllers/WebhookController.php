@@ -73,10 +73,6 @@ class WebhookController extends Controller
                             $darkleadController->send_status_update($utm_term, $data['status']);
                         }
 
-                        if($order->referer == 'rom_leads'){
-
-                        }
-
                     }
 
                     $keitaro_url = sprintf("%s%s&status=%s&payout=%s", env('KEITARO_API_URL'), $utm_term, $keitarostatus, $payout);

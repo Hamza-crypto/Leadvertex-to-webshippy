@@ -33,7 +33,8 @@ class LeadvertexOrdersController extends Controller
 
             ],
             'utm_term' => $request->utm_term ?? '',
-            'webmasterID' => (int) $request->input('webmaster_id', 10)
+            'webmasterID' => (int) $request->input('webmaster_id', 10),
+            'additional2' => $request->utm_term ?? '',
         ];
         $lv_response = Http::withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
