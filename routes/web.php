@@ -27,6 +27,7 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 |
  */
 Route::view('/', 'welcome');
+Route::view('privacy-policy', 'privacy-policy');
 
 Route::get('/clear_cache', function () {
 
