@@ -28,6 +28,8 @@ class ZappierController extends Controller
                     'goods'       => [
                         [
                             'quantity' => 1,
+                            'goodID' => "",
+                            'price' => "",
                         ],
                     ],
                     'additional1' => $request->ad_name ?? '',
