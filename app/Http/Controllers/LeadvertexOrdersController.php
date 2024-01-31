@@ -72,4 +72,42 @@ class LeadvertexOrdersController extends Controller
     {
         return view('thankyou');
     }
+
+
+    function bulk_update_status(Request $request)
+    {
+        $path = $request->file('csv_file')->getRealPath();
+        $data = array_map('str_getcsv', file($path));
+
+        unset($data[0]);
+
+       foreach($data as $row){
+        dump($row[31]);
+        $this->update_status($row[31], 'refused');
+
+       }
+
+    }
+
+    function update_status($leadvertex_order_id, $status)
+    {
+        $statuses = [
+            'paid' => 5, //Paid
+            'refused' => 7, //Return
+        ];
+
+        $url = sprintf("%s/updateOrder.html?token=%s&id=%d", env('LEADVERTEX_API_URL'), env('TOKEN'), $leadvertex_order_id);
+
+        $request_body = [
+            'status' => $statuses[$status]
+        ];
+
+        $lv_response = Http::withHeaders([
+            'Content-Type' => 'application/x-www-form-urlencoded'
+        ])->asForm()->post($url, $request_body);
+
+        $lv_response = json_decode($lv_response);
+        dump($lv_response);
+        return $lv_response->$leadvertex_order_id;
+    }
 }

@@ -92,6 +92,7 @@ Route::controller(BlockedUserController::class)->group(function () {
 
 Route::controller(LeadvertexOrdersController::class)->group(function () {
     Route::get('thankyou', 'thankyou');
+    Route::post('bulk/update', 'bulk_update_status')->name('status.bulk.update');
 });
 
 Route::get('/chart', function () {
