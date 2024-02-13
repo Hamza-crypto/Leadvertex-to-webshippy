@@ -82,6 +82,8 @@ class LeadvertexOrdersController extends Controller
         unset($data[0]);
 
        foreach($data as $row){
+        if( $row[31] == "" ) continue;
+
         dump($row[31]);
         $this->update_status($row[31], 'refused');
 
