@@ -5,6 +5,7 @@ use App\Http\Controllers\BlockedUserController;
 use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
+use App\Http\Controllers\SzamlaController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
 use App\Http\Controllers\WebshopPriceController;
@@ -130,4 +131,8 @@ Route::get('/get-ip', function () {
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
         }
+});
+
+Route::controller(SzamlaController::class)->group(function () {
+    Route::get('szamla', 'index');
 });
