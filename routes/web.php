@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BillingoController;
 use App\Http\Controllers\BlockedUserController;
+use App\Http\Controllers\DeliveoController;
 use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
@@ -133,6 +134,10 @@ Route::get('/get-ip', function () {
         }
 });
 
+Route::controller(DeliveoController::class)->group(function () {
+    Route::post('deliveo/webhook', 'webhook');
+});
+
 Route::controller(SzamlaController::class)->group(function () {
-    Route::get('szamla', 'index');
+    Route::get('szamla', 'create_invoice');
 });
