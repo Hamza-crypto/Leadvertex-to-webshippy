@@ -76,16 +76,17 @@ class LeadvertexOrdersController extends Controller
 
     function bulk_update_status(Request $request)
     {
-        $path = $request->file('csv_file')->getRealPath();
+        $path = $request->file('file')->getRealPath();
         $data = array_map('str_getcsv', file($path));
 
+        $status = $request->status;
         unset($data[0]);
 
        foreach($data as $row){
         if( $row[31] == "" ) continue;
 
         dump($row[31]);
-        $this->update_status($row[31], 'refused');
+        $this->update_status($row[31], $status);
 
        }
 
