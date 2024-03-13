@@ -11,12 +11,12 @@ class DeliveoController extends Controller
     public function webhook(Request $request){
         $deliveo_id = $request['deliveo_id'];
 
-        $url = sprintf("%s/%s?licence=naturprime&api_key=%s", env('DELIVEO_BASE_URL'), $deliveo_id, env('DELIVEO_API_KEY'));
+        $url = sprintf("%s/package/%s?licence=naturprime&api_key=%s", env('DELIVEO_BASE_URL'), $deliveo_id, env('DELIVEO_API_KEY'));
 
         // $jsonFilePath = public_path('deliveo.json');
         // $response = File::get($jsonFilePath);
 
-        $response = Http::get($url);
+        $response = Http::timeout(30)->get($url);
 
         $response = json_decode($response);
 
@@ -24,5 +24,23 @@ class DeliveoController extends Controller
 
         $szamlacontroller = new SzamlaController();
         $szamlacontroller->create_invoice($response);
+    }
+
+    public function get_product_details($item_id){
+
+        $url = sprintf("%s/item/%s?licence=naturprime&api_key=%s", env('DELIVEO_BASE_URL'), $item_id, env('DELIVEO_API_KEY'));
+
+        // $jsonFilePath = public_path('deliveo.json');
+        // $response = File::get($jsonFilePath);
+
+        $response = Http::timeout(30)->get($url);
+
+        $response = json_decode($response);
+dump($response);
+        if ($response->type != 'success') {
+            return null;
+        } else {
+            return $response->data[0];
+        }
     }
 }
