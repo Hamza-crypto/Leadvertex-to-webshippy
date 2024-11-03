@@ -10,7 +10,7 @@
         <div class="card-body">
             <div class="m-sm-4">
 
-                <h1>Registeration is disabled.</h1>
+                <h1>Registration is disabled.</h1>
             </div>
         </div>
     </div>
