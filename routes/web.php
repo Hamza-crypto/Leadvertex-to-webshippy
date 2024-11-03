@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\BillingoController;
 use App\Http\Controllers\BlockedUserController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveoController;
 use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SzamlaController;
+use App\Http\Controllers\UsersController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\WebshippyOrdersController;
 use App\Http\Controllers\WebshopPriceController;
@@ -28,35 +30,40 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 | contains the "web" middleware group. Now create something great!
 |
  */
-Route::view('/', 'welcome');
+// Route::view('/', 'welcome');
+Route::redirect('/', 'dashboard');
 Route::view('privacy-policy', 'privacy-policy');
 
 Route::get('/clear_cache', function () {
-
-    dd(request()->all());
     Artisan::call('optimize:clear');
     dump('Cache cleared successfully');
+});
+
+Route::get('/migrate', function () {
+    Artisan::call('migrate');
+    dump('Migration done successfully');
 });
 
 Route::get('/arukereso_products', function () {
 
     dump("Products without category");
-      $xmlFilePath = storage_path('products_arukereso.xml');
-        // Read XML file using simplexml_load_file
-        $xmlData = simplexml_load_file($xmlFilePath);
+    $xmlFilePath = storage_path('products_arukereso.xml');
+    // Read XML file using simplexml_load_file
+    $xmlData = simplexml_load_file($xmlFilePath);
 
-        // Alternatively, you can use the XML facade in Laravel
-        // $xmlData = XML::load($xmlFilePath);
+    // Alternatively, you can use the XML facade in Laravel
+    // $xmlData = XML::load($xmlFilePath);
 
-        // Access XML data as an object
-        $count = 1;
-        foreach ($xmlData as $item) {
-            if(!$item->Category)
+    // Access XML data as an object
+    $count = 1;
+    foreach ($xmlData as $item) {
+        if (!$item->Category) {
 
 
-            dump(sprintf("%d %s %s",$count,  $item->Identifier, $item->Category));
-            $count++;
+            dump(sprintf("%d %s %s", $count, $item->Identifier, $item->Category));
         }
+        $count++;
+    }
 
 });
 
@@ -121,17 +128,17 @@ Route::controller(FacebookWebhookController::class)->group(function () {
 });
 
 Route::get('/get-ip', function () {
-        try {
-            $ch = curl_init('https://icanhazip.com');
-            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $ip = trim(curl_exec($ch));
-            curl_close($ch);
+    try {
+        $ch = curl_init('https://icanhazip.com');
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $ip = trim(curl_exec($ch));
+        curl_close($ch);
 
-            return response()->json(['ip' => $ip]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
-        }
+        return response()->json(['ip' => $ip]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error: ' . $e->getMessage()], 500);
+    }
 });
 
 Route::controller(DeliveoController::class)->group(function () {
@@ -141,3 +148,22 @@ Route::controller(DeliveoController::class)->group(function () {
 Route::controller(SzamlaController::class)->group(function () {
     Route::get('szamla', 'create_invoice');
 });
+
+
+Route::group(['middleware' => ['auth']], function () {
+
+
+    Route::group([
+        'prefix' => 'profile',
+    ], function () {
+        Route::get('/{tab?}', [ProfileController::class, 'index'])->name('profile.index');
+        Route::post('account', [ProfileController::class, 'account'])->name('profile.account');
+    });
+
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::resource('users', UsersController::class);
+    Route::post('password/{user}', [UsersController::class, 'password_update'])->name('user.password_update');
+
+});
+
+Route::impersonate();

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Lab404\Impersonate\Models\Impersonate;
 
 class User extends Authenticatable
 {
@@ -15,31 +15,36 @@ class User extends Authenticatable
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
+    use Impersonate;
 
 
     protected $fillable = [
-        'uuid',
-        'first_name',
-        'last_name',
-        'username',
+        'name',
         'email',
         'password',
         'role',
         'status',
-        'is_visible',
+        'remember_token',
     ];
 
     protected $hidden = [
         'password',
     ];
 
-    public const ROLES = [
-        'ADMIN' => 1,
-        'ADVISOR' => 2,
-        'AGENCY' => 3,
-        'CREATIVE' => 4,
-        'RECRUITER' => 5,
-    ];
+    public function canImpersonate()
+    {
+        return $this->role == 'admin';
+    }
+
+
+    public static function getRoles()
+    {
+        return [
+            'admin' => 'Admin',
+            'operational_manager' => 'Operational Manager',
+            'marketing_manager' => 'Marketing Manager',
+        ];
+    }
 
     public const STATUSES = [
         'PENDING' => 0,
@@ -52,45 +57,6 @@ class User extends Authenticatable
         $fullName = trim($this->first_name . ' ' . $this->last_name);
 
         return $fullName !== '' ? $fullName : $this->username;
-    }
-
-    public function getRoleAttribute($value)
-    {
-        switch ($value) {
-            case User::ROLES['ADMIN']:
-                return 'admin';
-            case User::ROLES['ADVISOR']:
-                return 'advisor';
-            case User::ROLES['AGENCY']:
-                return 'agency';
-            case User::ROLES['CREATIVE']:
-                return 'creative';
-            case User::ROLES['RECRUITER']:
-                return 'recruiter';
-            default:
-                return null;
-        }
-    }
-
-    public function setRoleAttribute($value)
-    {
-        switch ($value) {
-            case 'admin':
-                $this->attributes['role'] = User::ROLES['ADMIN'];
-                break;
-            case 'advisor':
-                $this->attributes['role'] = User::ROLES['ADVISOR'];
-                break;
-            case 'agency':
-                $this->attributes['role'] = User::ROLES['AGENCY'];
-                break;
-            case 'recruiter':
-                $this->attributes['role'] = User::ROLES['RECRUITER'];
-                break;
-            default:
-                $this->attributes['role'] = User::ROLES['CREATIVE'];
-                break;
-        }
     }
 
     public function getStatusAttribute($value)

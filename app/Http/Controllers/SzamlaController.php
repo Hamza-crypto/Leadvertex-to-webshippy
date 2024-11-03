@@ -70,16 +70,16 @@ class SzamlaController extends Controller
 
             $item_detail = $deliveo_controller->get_product_details($pkg->item_no);
             $item = new InvoiceItem($item_detail->item_name, 0);
-            $item->setGrossAmount(0.0);
-            $item->setVatAmount(0.0);
-            $item->setNetPrice(0.0);
+            // $item->setGrossAmount(500);
+            // $item->setVatAmount(0.0);
+            $item->setNetPrice(10);
             // $itemLedger = new InvoiceItemLedger('economic event type', 'vat economic event type', 'revenue ledger number', 'vat ledger number');
             // $itemLedger->setSettlementPeriodStart('2022-04-01');
             // $itemLedger->setSettlementPeriodEnd('2022-04-30');
             // $item->setLedgerData($itemLedger);
 
             $invoice->addItem($item);
-            // break;
+            break;
 
         }
         try{
