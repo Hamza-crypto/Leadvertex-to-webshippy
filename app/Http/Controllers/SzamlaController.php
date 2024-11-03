@@ -23,6 +23,7 @@ class SzamlaController extends Controller
     {
         $data = $response->data[0];
 
+
         //Agent
         $agent = SzamlaAgentAPI::create(env('SZAMLAZZ_API_KEY'), false, Log::LOG_LEVEL_DEBUG);
         $agent->setResponseType(SzamlaAgentResponse::RESULT_AS_XML);
@@ -63,18 +64,24 @@ class SzamlaController extends Controller
 
         $invoice->setBuyer($buyer);
 
-            $item = new InvoiceItem("Item", 0);
-            $item->setGrossAmount(0.0);
-            $item->setVatAmount(0.0);
-            $item->setNetPrice(0.0);
-            $itemLedger = new InvoiceItemLedger('economic event type', 'vat economic event type', 'revenue ledger number', 'vat ledger number');
-            $itemLedger->setSettlementPeriodStart('2022-04-01');
-            $itemLedger->setSettlementPeriodEnd('2022-04-30');
+
+        $deliveo_controller = new DeliveoController();
+        foreach($data->packages as $pkg){
+
+            $item_detail = $deliveo_controller->get_product_details($pkg->item_no);
+            $item = new InvoiceItem($item_detail->item_name, 0);
+            // $item->setGrossAmount(500);
+            // $item->setVatAmount(0.0);
+            $item->setNetPrice(10);
+            // $itemLedger = new InvoiceItemLedger('economic event type', 'vat economic event type', 'revenue ledger number', 'vat ledger number');
+            // $itemLedger->setSettlementPeriodStart('2022-04-01');
+            // $itemLedger->setSettlementPeriodEnd('2022-04-30');
             // $item->setLedgerData($itemLedger);
 
-        $invoice->addItem($item);
+            $invoice->addItem($item);
+            break;
 
-
+        }
         try{
             $result = $agent->generateInvoice($invoice);
             $json = $result->toJson();

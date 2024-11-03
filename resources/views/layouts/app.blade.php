@@ -16,12 +16,12 @@
 
 <body data-theme="default" data-layout="fluid" data-sidebar-position="left" data-sidebar-behavior="sticky">
 
-
     <div class="wrapper">
 
+        @include('includes.aside')
 
         <div class="main">
-
+            @include('includes.header')
 
             <main class="content">
                 <div class="container-fluid p-0">
@@ -30,14 +30,13 @@
                 </div>
             </main>
 
-
+            @include('includes.footer')
         </div>
     </div>
 
 
     <script src="{{ asset('/assets/js/app.js') }}"></script>
 
-    {{-- <script src="{{ mix('/js/app.js') }}"></script> --}}
 
     <script>
         $(".select2").each(function() {
@@ -51,6 +50,16 @@
 
     @yield('alert')
     @yield('scripts')
+    <script>
+        @if (Session::has('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: "{{ Session::get('success') }}",
+                confirmButtonText: 'OK'
+            });
+        @endif
+    </script>
 
 </body>
 
