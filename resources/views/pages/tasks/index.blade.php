@@ -15,7 +15,30 @@
 @section('scripts')
     <script>
         $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            const user = urlParams.get('user');
+            const status = urlParams.get('status');
+
+
+            if (user && user !== '-100') {
+                $('#user').val(user).trigger('change');
+            }
+
+            if (status && status !== '-100') {
+                $('#status').val(status).trigger('change');
+            }
+
             $('#tasks-table').DataTable();
+
+
+        });
+
+        $('#clear-button').click(function() {
+            $('#user').val('-100').trigger('change');
+            $('#status').val('-100').trigger('change');
+
+            $('#filter-form').submit();
         });
 
         function confirmSubmission(event, taskTitle) {

@@ -6,6 +6,7 @@
                     <input type="hidden" class="d-none" name="filter" value="true" hidden>
                     <div class="row">
 
+                        <!-- User Filter -->
                         <div class="col-sm">
                             <div class="form-group">
                                 <label class="form-label" for="user"> User </label>
@@ -19,6 +20,7 @@
                             </div>
                         </div>
 
+                        <!-- Status Filter -->
                         <div class="col-sm">
                             <div class="form-group">
                                 <label class="form-label" for="status"> Status </label>
@@ -28,14 +30,12 @@
                                     <option value="pending">Pending</option>
                                     <option value="in_progress">In Progress</option>
                                     <option value="completed">Completed</option>
-
-
-
                                 </select>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Action Buttons -->
                     <div class="row">
                         <div class="col-sm mt-4">
                             <button type="submit" class="btn btn-sm btn-primary mt-2">Apply</button>
