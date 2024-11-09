@@ -29,11 +29,11 @@ class Task extends Model
 
     public function scopeFilter(Builder $query, $user = null, $status = null)
     {
-        if ($user !== null && $user !== -100) {
+        if ($user !== null && $user !== '-100') {
             $query->where('assigned_to', $user);
         }
 
-        if ($status !== null && $status !== -100) {
+        if ($status !== null && $status !== '-100') {
             $query->where('status', $status);
         }
 
