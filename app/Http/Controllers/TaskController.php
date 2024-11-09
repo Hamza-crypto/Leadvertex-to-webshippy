@@ -24,31 +24,25 @@ class TaskController extends Controller
         return view('pages.tasks.index', compact('tasks', 'users'));
     }
 
-    // Show form for creating a new task (only for admins)
     public function create()
     {
-        // Check if the user is admin
         if (Auth::user()->role != 'admin') {
             return redirect()->route('tasks.index')->with('error', 'You do not have permission to create tasks.');
         }
 
-        // Pass data for user selection (only for admins)
         $users = User::all();
         return view('pages.tasks.add', compact('users'));
     }
 
-    // Store a new task (only for admins)
     public function store(Request $request)
     {
-        // Validate incoming request data
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'assigned_to' => 'required|exists:users,id', // Ensure a valid user is selected
-            'status' => 'required|in:pending,in_progress,completed', // Example status
+            'assigned_to' => 'required|exists:users,id',
+            'status' => 'required|in:pending,in_progress,completed',
         ]);
 
-        // Create a new task
         Task::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -60,26 +54,21 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
-    // Show task details (view task)
     public function show($id)
     {
-        // Find task by ID
         $task = Task::findOrFail($id);
 
-        // Check if the task is assigned to the current user or is an admin
-        if (Auth::user()->role != 'admin' && $task->user_id != Auth::id()) {
+        if (Auth::user()->role != 'admin' && $task->assigned_to != Auth::id()) {
             return redirect()->route('tasks.index')->with('error', 'You do not have permission to view this task.');
         }
 
-        return view('tasks.show', compact('task'));
+        return view('pages.tasks.show', compact('task'));
     }
 
     public function edit(Task $task)
     {
-        // Ensure only admin or the assigned user can access this edit view
         $this->authorize('update', $task);
 
-        // Get the list of users (admin only functionality)
         $users = User::all();
 
         return view('pages.tasks.edit', compact('task', 'users'));
@@ -87,7 +76,6 @@ class TaskController extends Controller
 
     public function updateStatus(Request $request, Task $task)
     {
-        // Authorize the action using the policy
         $this->authorize('updateStatus', $task);
 
         $validated = $request->validate([
@@ -102,7 +90,6 @@ class TaskController extends Controller
 
     public function updateAssignee(Request $request, Task $task)
     {
-        // Authorize the action using the policy
         $this->authorize('updateAssignee', $task);
 
         $validated = $request->validate([
@@ -117,14 +104,13 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
-        // Only allow admins to update the task details
         $this->authorize('update', $task);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'assigned_to' => 'required|exists:users,id', // Ensure a valid user is selected
-            'status' => 'required|in:pending,in_progress,completed', // Example status
+            'assigned_to' => 'required|exists:users,id',
+            'status' => 'required|in:pending,in_progress,completed',
         ]);
 
         $task->update($validated);
@@ -134,7 +120,6 @@ class TaskController extends Controller
 
     public function destroy(Task $task)
     {
-        // Only allow admins to delete the task
         $this->authorize('delete', $task);
 
         $task->delete();

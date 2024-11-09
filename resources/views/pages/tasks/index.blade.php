@@ -82,9 +82,7 @@
                                 @endif
                                 <th>Status</th>
                                 <th>Created At</th>
-                                @if ($role == 'admin')
-                                    <th>Actions</th>
-                                @endif
+                                <th>Actions</th>
 
                             </tr>
                         </thead>
@@ -139,6 +137,13 @@
                                                     <i class="fa fa-trash"></i>
                                                 </button>
                                             </form>
+                                        </td>
+                                    @else
+                                        <td class="table-action">
+                                            <a href="{{ route('tasks.show', $task->id) }}" class="btn"
+                                                style="display: inline">
+                                                <i class="fa fa-eye text-info"></i>
+                                            </a>
                                         </td>
                                     @endif
 
