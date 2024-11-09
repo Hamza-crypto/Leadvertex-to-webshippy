@@ -41,8 +41,8 @@ Route::get('/clear_cache', function () {
     dump('Cache cleared successfully');
 });
 
-Route::get('/migrate', function () {
-    Artisan::call('migrate');
+Route::get('/migrate/fresh', function () {
+    Artisan::call('migrate:fresh --seed');
     dump('Migration done successfully');
 });
 
