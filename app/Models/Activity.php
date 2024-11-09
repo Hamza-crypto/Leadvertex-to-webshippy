@@ -10,7 +10,6 @@ class Activity extends Model
     use HasFactory;
 
     protected $fillable = [
-        'uuid',
         'user_id',
         'type',
         'message',
