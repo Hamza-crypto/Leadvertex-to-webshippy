@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('Add User'))
+@section('title', __('Add Task'))
 @section('scripts')
 
 @endsection

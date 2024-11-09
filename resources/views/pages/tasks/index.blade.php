@@ -1,5 +1,11 @@
 @php
     $role = auth()->user()->role;
+
+    $statuses = [
+        'pending' => '#faeddb', // Yellow
+        'in_progress' => '#d9e6fb', // Blue
+        'completed' => '#dbf2e3', // Green
+    ];
 @endphp
 
 @extends('layouts.app')
@@ -36,20 +42,13 @@
 @section('content')
     <h1 class="h3 mb-3">{{ __('All Tasks') }}</h1>
 
-    @php
-        $roleBadges = [
-            'pending' => 'badge-warning',
-            'in_progress' => 'badge-primary',
-            'completed' => 'badge-success',
-        ];
-    @endphp
+    @if ($role == 'admin')
+        @include('pages.tasks._inc.filters')
+    @endif
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    @php
-                        $role = auth()->user()->role;
-                    @endphp
                     <table class="table table-striped" id="tasks-table">
                         <thead>
                             <tr>
@@ -71,25 +70,26 @@
                                 <tr>
                                     <td>{{ $loop->index + 1 }}</td>
                                     <td>{{ $task->title }}</td>
-                                    @can('delete', $tasks[0])
+                                    @if ($role == 'admin')
                                         <td>{{ $task->assignedUser->name }}</td>
-                                    @endcan
+                                    @endif
                                     <td>
                                         <div class="form-group">
                                             <form action="{{ route('tasks.updateStatus', $task->id) }}" method="POST">
                                                 @csrf
                                                 @method('PATCH')
 
-                                                <select name="status" class="form-control" onchange="this.form.submit()">
-                                                    <option value="pending"
-                                                        {{ $task->status == 'pending' ? 'selected' : '' }}>
-                                                        Pending</option>
-                                                    <option value="in_progress"
-                                                        {{ $task->status == 'in_progress' ? 'selected' : '' }}>In Progress
-                                                    </option>
-                                                    <option value="completed"
-                                                        {{ $task->status == 'completed' ? 'selected' : '' }}>Completed
-                                                    </option>
+                                                <!-- Status Dropdown with Background Color Change -->
+                                                <select name="status" class="form-control mt-2"
+                                                    onchange="this.form.submit()"
+                                                    style="background-color: {{ $statuses[$task->status] ?? '#ffffff' }};">
+                                                    @foreach ($statuses as $status => $color)
+                                                        <option value="{{ $status }}" data-color="{{ $color }}"
+                                                            style="background-color: {{ $color }}; color: #black; "
+                                                            {{ $task->status == $status ? 'selected' : '' }}>
+                                                            {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                                        </option>
+                                                    @endforeach
                                                 </select>
 
                                             </form>

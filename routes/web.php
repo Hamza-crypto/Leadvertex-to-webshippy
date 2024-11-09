@@ -36,7 +36,7 @@ use Spatie\DiscordAlerts\Facades\DiscordAlert;
 Route::redirect('/', 'dashboard');
 Route::view('privacy-policy', 'privacy-policy');
 
-Route::get('/clear_cache', function () {
+Route::get('/optimize', function () {
     Artisan::call('optimize:clear');
     dump('Cache cleared successfully');
 });

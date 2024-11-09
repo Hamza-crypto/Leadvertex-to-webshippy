@@ -9,18 +9,17 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Check if the user is admin or a regular user
-        if (Auth::user()->role == 'admin') {
-            // Admin can see all tasks
-            $tasks = Task::with('assignedUser')->get();
+        $query = Task::query();
 
+        if (Auth::user()->role == 'admin') {
+            $tasks = $query->filter($request->user, $request->status)->with(['assignedUser'])->get();
+            $users = User::all();
         } else {
-            // Regular users can only see tasks assigned to them
-            $tasks = Task::where('assigned_to', Auth::id())->get();
+            $tasks = $query->filter(Auth::user()->id, $request->status)->with(['assignedUser'])->get();
+            $users = [];
         }
-        $users = User::all();
 
         return view('pages.tasks.index', compact('tasks', 'users'));
     }

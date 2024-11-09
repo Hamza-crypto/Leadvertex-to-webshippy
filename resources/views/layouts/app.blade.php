@@ -10,7 +10,6 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <link class="js-stylesheet" href="{{ asset('assets/css/light.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     @yield('styles')
 </head>
 
@@ -44,9 +43,7 @@
         })
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.1.2/sweetalert2.all.min.js"></script>
-    <script src="{{ asset('assets/js/alerts.js') }}"></script>
 
     @yield('alert')
     @yield('scripts')
