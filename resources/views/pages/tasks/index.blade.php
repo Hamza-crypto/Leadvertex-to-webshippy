@@ -1,3 +1,7 @@
+@php
+    $role = auth()->user()->role;
+@endphp
+
 @extends('layouts.app')
 
 @section('title', __('Tasks '))
@@ -43,20 +47,23 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-
+                    @php
+                        $role = auth()->user()->role;
+                    @endphp
                     <table class="table table-striped" id="tasks-table">
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Title</th>
-                                @can('delete', $tasks[0])
+                                @if ($role == 'admin')
                                     <th>Assigned To</th>
-                                @endcan
+                                @endif
                                 <th>Status</th>
                                 <th>Created At</th>
-                                @can('delete', $tasks[0])
+                                @if ($role == 'admin')
                                     <th>Actions</th>
-                                @endcan
+                                @endif
+
                             </tr>
                         </thead>
                         <tbody>
@@ -90,7 +97,7 @@
                                     </td>
                                     <td>{{ $task->created_at->diffForHumans() }}</td>
 
-                                    @can('delete', $task)
+                                    @if ($role == 'admin')
                                         <td class="table-action">
 
                                             <a href="{{ route('tasks.edit', $task->id) }}" class="btn"
@@ -110,7 +117,7 @@
                                                 </button>
                                             </form>
                                         </td>
-                                    @endcan
+                                    @endif
 
                                 </tr>
                             @empty
