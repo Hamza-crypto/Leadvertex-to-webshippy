@@ -181,6 +181,21 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus'); // Update task status by user
     Route::resource('tasks', TaskController::class)->except(['store', 'destroy', 'update']);
+
+    //Doctor Visits
+    Route::view('visits', 'pages/visits/add');
 });
 
 Route::impersonate();
+
+// Type
+// 1_ Giovenrment
+// 2_ Private
+
+// Potential:
+// 1_ Low
+// 2_Medium
+// 3_High
+
+// Status:
+// 1_Open
