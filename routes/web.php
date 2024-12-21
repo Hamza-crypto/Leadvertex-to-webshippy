@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\BlockedUserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveoController;
+use App\Http\Controllers\DoctorVisitController;
 use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
@@ -162,8 +163,8 @@ Route::group(['middleware' => ['admin']], function () {
      * Activity Log
      */
 
-    // Route::get('activity/log', [ActivityController::class, 'index'])->name('activity.index');
-    // Route::get('activity/log/{user}/details', [ActivityController::class, 'details']);
+    Route::get('activity/log', [ActivityController::class, 'index'])->name('activity.index');
+    Route::get('activity/log/{user}/details', [ActivityController::class, 'details']);
 });
 
 Route::group(['middleware' => ['auth']], function () {
@@ -181,9 +182,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus'); // Update task status by user
     Route::resource('tasks', TaskController::class)->except(['store', 'destroy', 'update']);
+    Route::resource('doctor-visits', DoctorVisitController::class);
 
-    //Doctor Visits
-    Route::view('visits', 'pages/visits/add');
 });
 
 Route::impersonate();
