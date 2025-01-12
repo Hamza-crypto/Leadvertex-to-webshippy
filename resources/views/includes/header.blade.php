@@ -2,9 +2,14 @@
     <a class="sidebar-toggle">
         <i class="hamburger align-self-center"></i>
     </a>
-
+             
     <div class="navbar-collapse collapse">
         <ul class="navbar-nav navbar-align">
+
+            <li class="nav-item dropdown">
+            <!-- Google Translate Dropdown -->
+            <div id="google_translate_element" style="position: absolute; top: 10px; right: 20px; z-index: 1000;"></div>
+            </li>
             <li class="nav-item dropdown">
                 <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-toggle="dropdown">
                     <i class="align-middle" data-feather="settings"></i>
