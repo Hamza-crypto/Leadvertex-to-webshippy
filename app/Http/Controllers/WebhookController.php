@@ -9,6 +9,7 @@ use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
+use function Illuminate\Support\defer;
 use NotificationChannels\Telegram\TelegramChannel;
 
 class WebhookController extends Controller
@@ -442,6 +443,18 @@ class WebhookController extends Controller
         $lv_response = json_decode($lv_response);
 
         return $lv_response->$lead_vertex_id;
+    }
+
+    public function salesrender(Request $request)
+    {  
+        $data = $request->all();
+
+        // defer(function () use ($data) {
+            $deliveo_controller = new DeliveoController();
+            $deliveo_controller->create_shipment($data);
+        //});
+
+        return response()->json(['success' => true]);
     }
 
 }

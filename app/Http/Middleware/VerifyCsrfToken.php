@@ -19,5 +19,6 @@ class VerifyCsrfToken extends Middleware
         'zapier_fb_lead',
         'facebook/webhook',
         'deliveo/webhook',
+        'webhook/salesrender',
     ];
 }
