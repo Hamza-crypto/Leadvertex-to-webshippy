@@ -47,6 +47,11 @@ Route::get('/migrate/fresh', function () {
     dump('Migration done successfully');
 });
 
+Route::get('/migrate', function () {
+    Artisan::call('migrate');
+    dump('Migration done successfully');
+});
+
 Route::get('/arukereso_products', function () {
 
     dump("Products without category");
