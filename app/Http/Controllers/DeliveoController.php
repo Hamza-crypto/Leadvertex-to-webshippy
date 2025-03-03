@@ -63,7 +63,7 @@ dump($response);
                 'request_body' => json_encode($deliveo_data),
                 'response_body' => null,
             ]);
-dd($deliveo_data);
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);
