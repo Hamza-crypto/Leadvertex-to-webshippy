@@ -449,8 +449,8 @@ class WebhookController extends Controller
     {  
         $data = $request->all();
         // defer(function () use ($data) {
-            $deliveo_controller = new DeliveoController();
-            $deliveo_controller->create_shipment($data);
+            // $deliveo_controller = new DeliveoController();
+            // $deliveo_controller->create_shipment($data);
         //});
 
         return response()->json(['success' => true]);
