@@ -113,12 +113,12 @@ dd($deliveo_data);
             'sender_phone' => '36304374237',
             'sender_email' => 'szabovk@supremepharmatech.hu',
             'consignee' => trim($firstName . ' ' . $lastName), 
-            'consignee_country' => $country,
-            'consignee_zip' => $postcode,
-            'consignee_city' => $city,
+            'consignee_country' => $country ?? 'HU',
+            'consignee_zip' => $postcode ?? '',
+            'consignee_city' => $city ?? '',
             'consignee_address' => Str::limit(sprintf('%s -[ADDRESS-2] %s', $address_1, $address_2), 40, '') ,
-            'consignee_apartment' => $apartment,
-            'consignee_phone' => $phoneRaw,
+            'consignee_apartment' => $apartment ?? '',
+            'consignee_phone' => $phoneRaw ?? '',
            
             'delivery' => 89, //89: FámaFutár , 185: FoxPost
             'cod' => $totalCodValue,
