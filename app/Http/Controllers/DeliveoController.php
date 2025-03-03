@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\APILog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class DeliveoController extends Controller
 {
@@ -64,7 +63,7 @@ dump($response);
                 'request_body' => json_encode($deliveo_data),
                 'response_body' => null,
             ]);
-
+dd($deliveo_data);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);
@@ -98,6 +97,7 @@ dump($response);
         
         $city = Arr::get($webhookData, 'data.addressFields.0.value.city');
         $address_1 = Arr::get($webhookData, 'data.addressFields.0.value.address_1');
+        $address_2 = Arr::get($webhookData, 'data.addressFields.0.value.address_2');
 
         $apartment = Arr::get($webhookData, 'data.addressFields.0.value.apartment');
         $country = Arr::get($webhookData, 'data.addressFields.0.value.country');
@@ -116,7 +116,7 @@ dump($response);
             'consignee_country' => $country,
             'consignee_zip' => $postcode,
             'consignee_city' => $city,
-            'consignee_address' => $address_1,
+            'consignee_address' => Str::limit(sprintf('%s -[ADDRESS-2] %s', $address_1, $address_2), 40, '') ,
             'consignee_apartment' => $apartment,
             'consignee_phone' => $phoneRaw,
            
