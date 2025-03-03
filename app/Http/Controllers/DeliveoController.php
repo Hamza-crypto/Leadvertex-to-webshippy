@@ -65,7 +65,6 @@ dump($response);
                 'response_body' => null,
             ]);
 
-            dd($deliveo_data);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);
@@ -77,24 +76,11 @@ dump($response);
                 'response_body' => $responseBody,
             ]);
 
-            Log::info('Deliveo API response:', [
-                'status_code' => $statusCode,
-                'body' => $responseBody,
-            ]);
-
             if ($statusCode >= 200 && $statusCode < 300) {
-                Log::info('Successfully created shipment with Deliveo.');
-               return [ 'message' => 'Shipment created successfully', 'deliveo_response' => json_decode($responseBody, true) ];
             } else {
-                Log::error('Failed to create shipment with Deliveo. Status code: ' . $statusCode . ', Body: ' . $responseBody);
                  throw new \Exception('Failed to create shipment with Deliveo. Status code: ' . $statusCode . ', Body: ' . $responseBody);
             }
         } catch (\Exception $e) {
-            Log::error('Error creating shipment with Deliveo: ' . $e->getMessage(), [
-                'url' => $url,
-                'data' => $deliveo_data,
-                'trace' => $e->getTraceAsString(),
-            ]);
             if (isset($apiLog)) { 
                 $apiLog->update(['response_body' => 'Error: ' . $e->getMessage()]);
             }
