@@ -65,7 +65,7 @@ dump($response);
                 'response_body' => null,
             ]);
 
-            // dd($deliveo_data);
+            dd($deliveo_data);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);
@@ -138,7 +138,7 @@ dump($response);
             'cod' => $totalCodValue,
         ];
 
-        // $transformedData['packages'] = $this->transformPackages($webhookData);
+        $transformedData['packages'] = $this->transformPackages($webhookData);
 
         return $transformedData;
     }
@@ -162,16 +162,20 @@ dump($response);
     private function transformPackages(array $webhookData): array
     {
         $packages = [];
-        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
-              $packages[] = [
-                'weight' => 0.2,
-                'x' => null,
-                'y' => null, 
-                'z' => null, 
-                'customcode' => null,
-                'item_no' => $cartItem['sku']['item']['id'],
+        
+        foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
+            $packages[] = [
+                'customcode' => $promotion['promotion']['name'],
+                'item_no' => $promotion['promotion']['id'],
                 ];
-            }
+        }  
+
+        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+            $packages[] = [
+              'customcode' => $cartItem['sku']['item']['name'],
+              'item_no' => $cartItem['sku']['item']['id'],
+              ];
+        }
 
         return $packages;
     }
