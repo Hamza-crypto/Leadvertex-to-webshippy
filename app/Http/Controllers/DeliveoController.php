@@ -89,18 +89,18 @@ dd($deliveo_data);
 
     public function transform(array $webhookData): array
     {
-        $firstName = Arr::get($webhookData, 'data.humanNameFields.0.value.firstName');
-        $lastName = Arr::get($webhookData, 'data.humanNameFields.0.value.lastName');
+        $firstName = Arr::get($webhookData, 'data.humanNameFields.0.value.firstName', '');
+        $lastName = Arr::get($webhookData, 'data.humanNameFields.0.value.lastName', '');
 
-        $phoneRaw = Arr::get($webhookData, 'data.phoneFields.0.value.raw');
-        $postcode = Arr::get($webhookData, 'data.addressFields.0.value.postcode');
+        $phoneRaw = Arr::get($webhookData, 'data.phoneFields.0.value.raw', '');
+        $postcode = Arr::get($webhookData, 'data.addressFields.0.value.postcode', '');
         
-        $city = Arr::get($webhookData, 'data.addressFields.0.value.city');
-        $address_1 = Arr::get($webhookData, 'data.addressFields.0.value.address_1');
-        $address_2 = Arr::get($webhookData, 'data.addressFields.0.value.address_2');
+        $city = Arr::get($webhookData, 'data.addressFields.0.value.city', '');
+        $address_1 = Arr::get($webhookData, 'data.addressFields.0.value.address_1', '');
+        $address_2 = Arr::get($webhookData, 'data.addressFields.0.value.address_2', '');
 
-        $apartment = Arr::get($webhookData, 'data.addressFields.0.value.apartment');
-        $country = Arr::get($webhookData, 'data.addressFields.0.value.country');
+        $apartment = Arr::get($webhookData, 'data.addressFields.0.value.apartment', '');
+        $country = Arr::get($webhookData, 'data.addressFields.0.value.country', 'HU');
 
         $totalCodValue = $this->calculateTotalCodValue($webhookData);
 
