@@ -448,7 +448,6 @@ class WebhookController extends Controller
     public function salesrender(Request $request)
     {  
         $data = $request->all();
-
         // defer(function () use ($data) {
             $deliveo_controller = new DeliveoController();
             $deliveo_controller->create_shipment($data);

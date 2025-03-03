@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 
 class DeliveoController extends Controller
 {
@@ -55,55 +56,23 @@ dump($response);
             env('DELIVEO_API_KEY')
         );
 
-        $deliveo_data = [
-            'sender'              => 'Shop name',
-            'sender_country'      => 'HU',
-            'sender_zip'          => '1222',
-            'sender_city'         => 'Budapest',
-            'sender_address'      => 'Nagytétényi út 112 L3 (MXP)',
-            'sender_apartment'    => '',
-            'sender_phone'        => '+36201111111',
-            'sender_email'        => 'info@support.com',
-            'consignee'           => 'Test Customer',
-            'consignee_country'   => 'HU',
-            'consignee_zip'         => '2030',
-            'consignee_city'      => 'Érd',
-            'consignee_address' => 'Fő utca 1.',
-            'consignee_apartment' => '',
-            'consignee_phone'     => '+36201234567',
-            'consignee_email'     => 'customer@address.com',
-            'shop_id'             => '480072',
-            'delivery'            => 185,
-            'cod'                 => 14700,
-            'currency'            => 'HUF',
-            'comment'             => 'If possible deliver in the morning',
-            'tracking'            => '11723480',
-            'colli'               => 1,
-            'packages'            => [
-                [
-                    'weight' => 0.2,
-                ],
-            ],
-        ];
+        $deliveo_data = $this->transform($data);
 
         try {
-            // 1. Create the API log *before* the request
             $apiLog = APILog::create([
                 'api_name' => 'Deliveo',
                 'request_body' => json_encode($deliveo_data),
-                'response_body' => null, // Initially null
+                'response_body' => null,
             ]);
 
+            // dd($deliveo_data);
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ])->asForm()->post($url, $deliveo_data);
 
-            // 2. Send the API request
-            $response = Http::post($url, $deliveo_data);
-
-
-            // 3. Get the status code and body *after* the request
             $statusCode = $response->status();
             $responseBody = $response->body();
 
-            // 4. Update the API log
             $apiLog->update([
                 'response_body' => $responseBody,
             ]);
@@ -115,8 +84,7 @@ dump($response);
 
             if ($statusCode >= 200 && $statusCode < 300) {
                 Log::info('Successfully created shipment with Deliveo.');
-                // Process the successful response
-               return [ 'message' => 'Shipment created successfully', 'deliveo_response' => json_decode($responseBody, true) ]; // Return the decoded JSON
+               return [ 'message' => 'Shipment created successfully', 'deliveo_response' => json_decode($responseBody, true) ];
             } else {
                 Log::error('Failed to create shipment with Deliveo. Status code: ' . $statusCode . ', Body: ' . $responseBody);
                  throw new \Exception('Failed to create shipment with Deliveo. Status code: ' . $statusCode . ', Body: ' . $responseBody);
@@ -127,11 +95,84 @@ dump($response);
                 'data' => $deliveo_data,
                 'trace' => $e->getTraceAsString(),
             ]);
-            // Update API log with the error message:
-            if (isset($apiLog)) { // Check if apiLog was created before the exception
+            if (isset($apiLog)) { 
                 $apiLog->update(['response_body' => 'Error: ' . $e->getMessage()]);
             }
-            return null; // Or throw the exception if you want it to bubble up
+            return null;
         }
+    }
+
+    public function transform(array $webhookData): array
+    {
+        $firstName = Arr::get($webhookData, 'data.humanNameFields.0.value.firstName');
+        $lastName = Arr::get($webhookData, 'data.humanNameFields.0.value.lastName');
+
+        $phoneRaw = Arr::get($webhookData, 'data.phoneFields.0.value.raw');
+        $postcode = Arr::get($webhookData, 'data.addressFields.0.value.postcode');
+        
+        $city = Arr::get($webhookData, 'data.addressFields.0.value.city');
+        $address_1 = Arr::get($webhookData, 'data.addressFields.0.value.address_1');
+
+        $apartment = Arr::get($webhookData, 'data.addressFields.0.value.apartment');
+        $country = Arr::get($webhookData, 'data.addressFields.0.value.country');
+
+        $totalCodValue = $this->calculateTotalCodValue($webhookData);
+
+        $transformedData = [
+            'sender' => 'Supreme Pharmatech Hungary',
+            'sender_country' => 'HU',
+            'sender_zip' => '1134',
+            'sender_city' => 'Budapest',
+            'sender_address' => 'Lóportár utca 12',
+            'sender_phone' => '36304374237',
+            'sender_email' => 'szabovk@supremepharmatech.hu',
+            'consignee' => trim($firstName . ' ' . $lastName), 
+            'consignee_country' => $country,
+            'consignee_zip' => $postcode,
+            'consignee_city' => $city,
+            'consignee_address' => $address_1,
+            'consignee_apartment' => $apartment,
+            'consignee_phone' => $phoneRaw,
+           
+            'delivery' => 89, //89: FámaFutár , 185: FoxPost
+            'cod' => $totalCodValue,
+        ];
+
+        // $transformedData['packages'] = $this->transformPackages($webhookData);
+
+        return $transformedData;
+    }
+
+    private function calculateTotalCodValue(array $webhookData): float
+    {
+        $total = 0.0;
+
+        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+            $total += (float)Arr::get($cartItem, 'pricing.totalPrice', 0);
+        }
+
+        foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
+            foreach (Arr::get($promotion, 'items', []) as $item) {
+                $total += (float)Arr::get($item, 'pricing.unitPrice', 0);
+            }
+        }
+
+        return $total;
+    }
+    private function transformPackages(array $webhookData): array
+    {
+        $packages = [];
+        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+              $packages[] = [
+                'weight' => 0.2,
+                'x' => null,
+                'y' => null, 
+                'z' => null, 
+                'customcode' => null,
+                'item_no' => $cartItem['sku']['item']['id'],
+                ];
+            }
+
+        return $packages;
     }
 }

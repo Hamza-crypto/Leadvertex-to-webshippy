@@ -84,7 +84,7 @@ Route::controller(WebhookController::class)->group(function () {
     Route::post('leadvertex/webhook', 'store'); // LV status: ACCEPTED
     Route::post('leadvertex-all-orders/webhook', 'createRecordOnVCC'); // LV New Order
     Route::post('webhook/arknet', 'store'); // New Order from Ark net
-    Route::post('webhook/salesrender', 'salesrender');
+    Route::post('salesrender/webhook', 'salesrender');
 
 });
 
