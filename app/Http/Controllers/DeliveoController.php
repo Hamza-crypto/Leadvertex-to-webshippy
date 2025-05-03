@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\APILog;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Arr;
@@ -46,8 +47,8 @@ dump($response);
         }
     }
 
-    public function create_shipment($data){
-
+    public function create_shipment($data, $order_id)
+    {
         $url = sprintf(
             "%spackage/create?licence=%s&api_key=%s",
             env('DELIVEO_BASE_URL'),
@@ -57,33 +58,43 @@ dump($response);
 
         $deliveo_data = $this->transform($data);
 
-        try {
-            $apiLog = APILog::create([
-                'api_name' => 'Deliveo',
-                'request_body' => json_encode($deliveo_data),
-                'response_body' => null,
-            ]);
+        $apiLogData = [
+            'order_id' => data_get($data, 'data.ordersFetcher.orders.0.id'),
+            'crm' => 'Deliveo',
+            'api_url' => $url,
+            'request_method' => 'POST',
+            'request_body' => $deliveo_data,
+        ];
 
+        try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);
 
-            $statusCode = $response->status();
-            $responseBody = $response->body();
+            $apiLogData['status'] = $response->status();
+            $apiLogData['response_body'] = $response->json();
+            
 
-            $apiLog->update([
-                'response_body' => $responseBody,
-            ]);
-
-            if ($statusCode >= 200 && $statusCode < 300) {
-            } else {
-                 throw new \Exception('Failed to create shipment with Deliveo. Status code: ' . $statusCode . ', Body: ' . $responseBody);
+            if ($response->failed()) {
+                throw new \Exception('Failed to create shipment with Deliveo. Status code: ' . $response->status());
             }
+
+            $json = $response->json();
+
+            if ($json['type'] === 'success' && isset($json['data'][0])) {
+                $shipmentId = $json['data'][0]; // e.g. MXP25050250632
+
+                if ($shipmentId) {
+                    Order::where('source_id', $order_id)->update([
+                        'destination_id' => $shipmentId,
+                    ]);
+                }
+            }
+
         } catch (\Exception $e) {
-            if (isset($apiLog)) { 
-                $apiLog->update(['response_body' => 'Error: ' . $e->getMessage()]);
-            }
-            return null;
+            $apiLogData['response_body'] = 'Error: ' . $e->getMessage();
+        } finally {
+            APILog::create($apiLogData);
         }
     }
 
@@ -120,7 +131,7 @@ dump($response);
             'consignee_apartment' => $apartment ?? '',
             'consignee_phone' => $phoneRaw ?? '',
            
-            'delivery' => 89, //89: FámaFutár , 185: FoxPost
+            'delivery' => 89, //89: FámaFutár , 185: FoxPost //change to FámaFutár
             'cod' => $totalCodValue,
         ];
 
@@ -131,19 +142,23 @@ dump($response);
 
     private function calculateTotalCodValue(array $webhookData): float
     {
-        $total = 0.0;
+    $total = 0.0;
 
-        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
-            $total += (float)Arr::get($cartItem, 'pricing.totalPrice', 0);
+    // Calculate total for cart items
+    foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+        $total += (float)Arr::get($cartItem, 'pricing.totalPrice', 0);
+    }
+
+    // Calculate total for promotion items
+    foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
+        foreach (Arr::get($promotion, 'items', []) as $item) {
+            // Add the unitPrice of the promotion item
+            $total += (float)Arr::get($item, 'pricing.unitPrice', 0);
         }
+    }
 
-        foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
-            foreach (Arr::get($promotion, 'items', []) as $item) {
-                $total += (float)Arr::get($item, 'pricing.unitPrice', 0);
-            }
-        }
+    return $total;
 
-        return $total;
     }
     private function transformPackages(array $webhookData): array
     {
@@ -153,6 +168,7 @@ dump($response);
             $packages[] = [
                 'customcode' => $promotion['promotion']['name'],
                 'item_no' => $promotion['promotion']['id'],
+                'weight' => 1.2,
                 ];
         }  
 
@@ -160,6 +176,7 @@ dump($response);
             $packages[] = [
               'customcode' => $cartItem['sku']['item']['name'],
               'item_no' => $cartItem['sku']['item']['id'],
+              'weight' => 1.5,
               ];
         }
 

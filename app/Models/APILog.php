@@ -8,9 +8,13 @@ class APILog extends Model
 {
     protected $table = 'api_logs';
     protected $fillable = [
-        'api_name',
+        'order_id',
+        'crm',
+        'api_url',
+        'request_method',
         'request_body',
         'response_body',
+        'status',
     ];
 
     protected $casts = [

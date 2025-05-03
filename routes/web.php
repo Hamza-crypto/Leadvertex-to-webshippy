@@ -13,7 +13,7 @@ use App\Http\Controllers\SzamlaController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\WebshippyOrdersController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WebshopPriceController;
 use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
@@ -97,7 +97,7 @@ Route::controller(NaturprimeLeadvertexController::class)->group(function () {
     Route::post('naturprime_leadvertex_new_order/webhook', 'new_order_created_webhook'); // LV New Order
 });
 
-Route::controller(WebshippyOrdersController::class)->group(function () {
+Route::controller(OrderController::class)->group(function () {
     Route::get('get_webshippy_orders', 'UpdateOrders');
     Route::get('/chart-data', 'chartData')->name('chart.data');
 });
@@ -192,16 +192,3 @@ Route::group(['middleware' => ['auth']], function () {
 });
 
 Route::impersonate();
-
-// Type
-// 1_ Giovenrment
-// 2_ Private
-
-// Potential:
-// 1_ Low
-// 2_Medium
-// 3_High
-
-// Status:
-// 1_Open
-//

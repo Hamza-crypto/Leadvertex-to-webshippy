@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BlockedUser;
 use App\Models\ProductMapping;
-use App\Models\WebshippyOrders;
+use App\Models\Order;
 use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -448,9 +448,34 @@ class WebhookController extends Controller
     public function salesrender(Request $request)
     {  
         $data = $request->all();
+
+        // Extract order info safely
+        $order = data_get($data, 'data.ordersFetcher.orders.0');
+
+        if (!$order || !isset($order['id'], $order['status']['name'])) {
+            return response()->json(['error' => 'Invalid order structure'], 422);
+        }
+
+        $order_id = $order['id'];
+        $status = data_get($order, 'status.name');
+        $createdAt = data_get($order, 'createdAt', now());
+
+        $rawDeliveryDate = data_get($order, 'data.dateTimeFields.0.value');
+        $deliveryTimestamp = $rawDeliveryDate ? \Carbon\Carbon::parse($rawDeliveryDate)->toDateTimeString() : null;
+    
+        Order::updateOrCreate(
+            ['source_id' => $order_id],
+            [
+                'status' => $status,
+                'created_at' => $createdAt,
+                'updated_at' => now(),
+                'delivery_date' => $deliveryTimestamp,
+            ]
+        );
+
         // defer(function () use ($data) {
-            // $deliveo_controller = new DeliveoController();
-            // $deliveo_controller->create_shipment($data);
+        $deliveo_controller = new DeliveoController();
+        $deliveo_controller->create_shipment($order, $order_id);
         //});
 
         return response()->json(['success' => true]);
