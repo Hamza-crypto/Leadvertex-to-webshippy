@@ -447,10 +447,7 @@ class WebhookController extends Controller
 
     public function salesrender(Request $request)
     {  
-        $data = $request->all();
-
-        // Extract order info safely
-        $order = data_get($data, 'data.ordersFetcher.orders.0');
+        $order = $request->all();
 
         $order_id = $order['id'];
         $status = data_get($order, 'status.name');
