@@ -452,10 +452,6 @@ class WebhookController extends Controller
         // Extract order info safely
         $order = data_get($data, 'data.ordersFetcher.orders.0');
 
-        if (!$order || !isset($order['id'], $order['status']['name'])) {
-            return response()->json(['error' => 'Invalid order structure'], 422);
-        }
-
         $order_id = $order['id'];
         $status = data_get($order, 'status.name');
         $createdAt = data_get($order, 'createdAt', now());
@@ -473,11 +469,18 @@ class WebhookController extends Controller
             ]
         );
 
-        // defer(function () use ($data) {
-        $deliveo_controller = new DeliveoController();
-        $deliveo_controller->create_shipment($order, $order_id);
-        //});
+        $deliveoController = new DeliveoController();
 
+        // ✅ Rule 1: If status is Accepted, send even if delivery date is empty
+        if ($status === 'Accepted') {
+            $deliveoController->create_shipment($order);
+        }
+
+        // ✅ Rule 2: If delivery date is present, send only if status is Sent to deliveo
+        if (!is_null($deliveryTimestamp) && strtolower($status) === 'sent to deliveo') {
+            $deliveoController->create_shipment($order);
+        }
+        
         return response()->json(['success' => true]);
     }
 

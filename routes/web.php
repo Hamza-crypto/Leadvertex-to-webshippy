@@ -52,6 +52,22 @@ Route::get('/migrate', function () {
     dump('Migration done successfully');
 });
 
+// Route::get('/orders-import', function () {
+//     Artisan::call('orders:send-tomorrow');
+// });
+
+Route::post('/fake-deliveo/package/create', function (Request $request) {
+    $randomNumber = rand(1000, 9999);
+    $fakeId = "MXP2505026" . $randomNumber;
+
+    return response()->json([
+        "msg" => "Successful package sending",
+        "data" => [$fakeId],
+        "type" => "success",
+        "error_code" => 0
+    ]);
+});
+
 Route::get('/arukereso_products', function () {
 
     dump("Products without category");

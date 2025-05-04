@@ -47,7 +47,7 @@ dump($response);
         }
     }
 
-    public function create_shipment($data, $order_id)
+    public function create_shipment($data)
     {
         $url = sprintf(
             "%spackage/create?licence=%s&api_key=%s",
@@ -83,8 +83,9 @@ dump($response);
 
             if ($json['type'] === 'success' && isset($json['data'][0])) {
                 $shipmentId = $json['data'][0]; // e.g. MXP25050250632
-
+                
                 if ($shipmentId) {
+                    $order_id = $data['id'];
                     Order::where('source_id', $order_id)->update([
                         'destination_id' => $shipmentId,
                     ]);

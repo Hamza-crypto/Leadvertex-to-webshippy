@@ -20,5 +20,6 @@ class VerifyCsrfToken extends Middleware
         'facebook/webhook',
         'deliveo/webhook',
         'salesrender/webhook',
+        'fake-deliveo/package/create',
     ];
 }
