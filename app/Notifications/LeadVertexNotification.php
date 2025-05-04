@@ -37,6 +37,8 @@ class LeadVertexNotification extends Notification
             $telegram_id = env('TELEGRAM_BILLINGO_ID');
         } elseif ($msg['to'] == 'fb_leads') {
             $telegram_id = env('TELEGRAM_FB_LEADS');
+        } elseif ($msg['to'] == 'salesrender') {
+            $telegram_id = env('TELEGRAM_SALESRENDER_DELIVEO');
         } else {
             $telegram_id = env('TELEGRAM_COMNICA_ID');
         }

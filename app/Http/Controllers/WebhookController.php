@@ -7,9 +7,9 @@ use App\Models\ProductMapping;
 use App\Models\Order;
 use App\Notifications\LeadVertexNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
-use function Illuminate\Support\defer;
 use NotificationChannels\Telegram\TelegramChannel;
 
 class WebhookController extends Controller
@@ -455,7 +455,11 @@ class WebhookController extends Controller
 
         $rawDeliveryDate = data_get($order, 'data.dateTimeFields.0.value');
         $deliveryTimestamp = $rawDeliveryDate ? \Carbon\Carbon::parse($rawDeliveryDate)->toDateTimeString() : null;
-    
+        
+        $isDueTomorrow = $deliveryTimestamp 
+        ? Carbon::parse($deliveryTimestamp)->isSameDay(Carbon::tomorrow())
+        : false;
+
         Order::updateOrCreate(
             ['source_id' => $order_id],
             [
@@ -469,7 +473,7 @@ class WebhookController extends Controller
         $deliveoController = new DeliveoController();
 
         // ✅ Rule 1: If status is Accepted, send even if delivery date is empty
-        if ($status === 'Accepted') {
+        if ($status === 'Accepted' && $isDueTomorrow) {
             $deliveoController->create_shipment($order);
         }
 

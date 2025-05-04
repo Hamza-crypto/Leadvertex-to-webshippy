@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\APILog;
 use App\Models\Order;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadVertexNotification;
 
 class DeliveoController extends Controller
 {
@@ -90,6 +92,10 @@ dump($response);
                         'destination_id' => $shipmentId,
                     ]);
                 }
+
+                $data_telegram['to'] = 'salesrender';
+                $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
+                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
             }
 
         } catch (\Exception $e) {
