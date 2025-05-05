@@ -52,9 +52,9 @@ Route::get('/migrate', function () {
     dump('Migration done successfully');
 });
 
-// Route::get('/orders-import', function () {
-//     Artisan::call('orders:send-tomorrow');
-// });
+Route::get('orders/send', function () {
+    Artisan::call('orders:send-tomorrow');
+});
 
 Route::post('/fake-deliveo/package/create', function (Request $request) {
     $randomNumber = rand(1000, 9999);
