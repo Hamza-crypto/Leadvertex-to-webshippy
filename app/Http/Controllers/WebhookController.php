@@ -472,9 +472,14 @@ class WebhookController extends Controller
 
         $deliveoController = new DeliveoController();
 
-        // ✅ Rule 1: If status is Accepted, send even if delivery date is empty
-        if ($status === 'Accepted' && $isDueTomorrow) {
+        if(is_null($deliveryTimestamp)){
             $deliveoController->create_shipment($order);
+        }
+        else{
+            // ✅ Rule 1: If status is Accepted, send even if delivery date is empty
+            if ($status === 'Accepted' && $isDueTomorrow) {
+                $deliveoController->create_shipment($order);
+            }
         }
 
         // ✅ Rule 2: If delivery date is present, send only if status is Sent to deliveo
