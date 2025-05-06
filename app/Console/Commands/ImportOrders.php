@@ -14,7 +14,7 @@ class ImportOrders extends Command
 
     public function handle()
     {
-        $orderIds = range(12728, 13139);
+        $orderIds = range(12936, 13139);
 
         $query = <<<GQL
 query GetOrderById(\$orderId: ID!) {

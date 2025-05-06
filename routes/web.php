@@ -56,6 +56,10 @@ Route::get('orders/send', function () {
     Artisan::call('orders:send-tomorrow');
 });
 
+Route::get('import/orders', function () {
+    Artisan::call('graphql:fetch-orders');
+});
+
 Route::post('/fake-deliveo/package/create', function (Request $request) {
     $randomNumber = rand(1000, 9999);
     $fakeId = "MXP2505026" . $randomNumber;
