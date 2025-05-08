@@ -183,9 +183,12 @@ dump($response);
         }  
 
         foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+            $item_id = $cartItem['sku']['item']['id'];
+            if($item_id == '15') continue;
+   
             $packages[] = [
               'customcode' => $cartItem['sku']['item']['name'],
-              'item_no' => $cartItem['sku']['item']['id'],
+              'item_no' => $item_id,
               'weight' => 1.5,
               ];
         }
