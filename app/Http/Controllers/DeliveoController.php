@@ -137,7 +137,7 @@ dump($response);
             'consignee_country' => $country ?? 'HU',
             'consignee_zip' => $postcode ?? '',
             'consignee_city' => $city ?? '',
-            'consignee_address' => Str::limit(sprintf('%s -[ADDRESS-2] %s', $address_1, $address_2), 40, '') ,
+            'consignee_address' => Str::limit(sprintf('%s %s', $address_1, $address_2), 40, '') ,
             'consignee_apartment' => $apartment ?? '',
             'consignee_phone' => $phoneRaw ?? '',
            
@@ -152,20 +152,20 @@ dump($response);
 
     private function calculateTotalCodValue(array $webhookData): float
     {
-    $total = 0.0;
+        $total = 0.0;
 
-    // Calculate total for cart items
-    foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
-        $total += (float)Arr::get($cartItem, 'pricing.totalPrice', 0);
-    }
-
-    // Calculate total for promotion items
-    foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
-        foreach (Arr::get($promotion, 'items', []) as $item) {
-            // Add the unitPrice of the promotion item
-            $total += (float)Arr::get($item, 'pricing.unitPrice', 0);
+        // Calculate total for cart items
+        foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
+            $total += (float)Arr::get($cartItem, 'pricing.totalPrice', 0);
         }
-    }
+
+        // Calculate total for promotion items
+        foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
+            foreach (Arr::get($promotion, 'items', []) as $item) {
+                // Add the unitPrice of the promotion item
+                $total += (float)Arr::get($item, 'pricing.unitPrice', 0);
+            }
+        }
 
     return $total;
 
