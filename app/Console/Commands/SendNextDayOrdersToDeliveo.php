@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\DeliveoController;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Console\Command;
 use App\Models\Order;
 use Carbon\Carbon;
 
@@ -14,10 +14,18 @@ class SendNextDayOrdersToDeliveo extends Command
   protected $description = 'Send orders with delivery date as tomorrow to next CRM';
   public function handle()
   {
-      $tomorrow = Carbon::now()->addDay()->startOfDay();
+      $today = Carbon::now();
+      
+      if ($today->isFriday()) {
+          // On Friday, target orders with delivery on Monday
+          $targetDate = $today->copy()->addDays(3)->startOfDay();
+      } else {
+          // On other days, send orders scheduled for tomorrow
+          $targetDate = $today->copy()->addDay()->startOfDay();
+      }
 
       $orders = Order::whereNull('destination_id')
-        ->whereDate('delivery_date', $tomorrow)
+        ->whereDate('delivery_date', $targetDate)
         ->get();
 
       // $orders = Order::whereNull('destination_id')->whereNotNull('delivery_date')->get();
