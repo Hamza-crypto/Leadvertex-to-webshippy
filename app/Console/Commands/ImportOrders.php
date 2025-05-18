@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\SalesRenderController;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use App\Models\Order;
 use Carbon\Carbon;
 
@@ -15,61 +15,11 @@ class ImportOrders extends Command
     public function handle()
     {
         $orderIds = range(12936, 13139);
-
-        $query = <<<GQL
-query GetOrderById(\$orderId: ID!) {
-  ordersFetcher(filters: { include: { ids: [\$orderId] } }) {
-    orders {
-      id
-      status { name }
-      createdAt
-      data {
-        dateTimeFields { value }
-        humanNameFields { value { firstName lastName } }
-        phoneFields { value { raw } }
-        addressFields { value {
-          postcode region city address_1 address_2 building apartment country
-          location { latitude longitude }
-        }}
-      }
-      cart {
-        items {
-          id
-          sku {
-            item { id name }
-            variation { number property }
-          }
-          quantity
-          pricing { unitPrice totalPrice }
-        }
-        promotions {
-          id
-          promotion { id name }
-          items {
-            promotionItem
-            sku {
-              item { id name }
-              variation { number property }
-            }
-            pricing { unitPrice }
-          }
-        }
-      }
-    }
-  }
-}
-GQL;
+        $salesRenderController = new SalesRenderController();
 
         foreach ($orderIds as $orderId) {
             $this->info("Fetching order ID: $orderId");
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
-            ])->post(env('GRAPHQL_API_URL'), [
-                'query' => $query,
-                'variables' => ['orderId' => $orderId],
-            ]);
+            $response = $salesRenderController->get_order_info($orderId);
 
             if ($response->failed()) {
                 $this->error("Request failed: " . $response->body());

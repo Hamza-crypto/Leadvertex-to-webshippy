@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\DeliveoController;
-use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\SalesRenderController;
 use Illuminate\Console\Command;
 use App\Models\Order;
 use Carbon\Carbon;
@@ -31,59 +31,10 @@ class SendNextDayOrdersToDeliveo extends Command
       // $orders = Order::whereNull('destination_id')->whereNotNull('delivery_date')->get();
 
       $deliveoController = new DeliveoController();
+      $salesRenderController = new SalesRenderController();
       
-      $query = <<<GQL
-query GetOrderById(\$orderId: ID!) {
-  ordersFetcher(filters: { include: { ids: [\$orderId] } }) {
-    orders {
-      id
-      status { name }
-      createdAt
-      data {
-        dateTimeFields { value }
-        humanNameFields { value { firstName lastName } }
-        phoneFields { value { raw } }
-        addressFields { value {
-          postcode region city address_1 address_2 building apartment country
-          location { latitude longitude }
-        }}
-      }
-      cart {
-        items {
-          id
-          sku {
-            item { id name }
-            variation { number property }
-          }
-          quantity
-          pricing { unitPrice totalPrice }
-        }
-        promotions {
-          id
-          promotion { id name }
-          items {
-            promotionItem
-            sku {
-              item { id name }
-              variation { number property }
-            }
-            pricing { unitPrice }
-          }
-        }
-      }
-    }
-  }
-}
-GQL;
-
       foreach ($orders as $order) {
-        $response = Http::withHeaders([
-          'Content-Type' => 'application/json',
-          'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
-        ])->post(env('GRAPHQL_API_URL'), [
-            'query' => $query,
-            'variables' => ['orderId' => $order->source_id],
-        ]);
+        $response = $salesRenderController->get_order_info($order->source_id);
 
         if ($response->failed()) {
             $this->error("Request failed: " . $response->body());
