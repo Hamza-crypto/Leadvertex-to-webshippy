@@ -9,6 +9,7 @@ use App\Http\Controllers\FacebookWebhookController;
 use App\Http\Controllers\LeadvertexOrdersController;
 use App\Http\Controllers\NaturprimeLeadvertexController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SalesRenderController;
 use App\Http\Controllers\SzamlaController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UsersController;
@@ -171,6 +172,11 @@ Route::get('/get-ip', function () {
 
 Route::controller(DeliveoController::class)->group(function () {
     Route::post('deliveo/webhook', 'webhook');
+});
+
+Route::controller(SalesRenderController::class)->group(function () {
+    Route::get('/show-invoice', 'show_invoice');
+    Route::get('/invoice/{orderid}', 'create_invoice');
 });
 
 Route::controller(SzamlaController::class)->group(function () {
