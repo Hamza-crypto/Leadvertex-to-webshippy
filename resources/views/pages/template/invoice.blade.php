@@ -59,7 +59,7 @@
             <p><strong>{{ $seller_name }}</strong></p>
             <p>{{ $seller_address_line1 }}</p>
             <p>{{ $seller_address_line2 }}</p>
-            <p>{{ $seller_city_zip }}, {{ $seller_country }}</p>
+            <p>{{ $seller_country }}</p>
             <p>Adószám: {{ $seller_tax_id }}</p>
             <p>Cégjegyzékszám: {{ $seller_company_reg_id }}</p>
         </div>
@@ -68,7 +68,7 @@
             <p><strong>{{ $buyer_name }}</strong></p>
             <p>{{ $buyer_address_line1 }}</p>
             <p>{{ $buyer_address_line2 }}</p>
-            <p>{{ $buyer_city_zip }}, {{ $buyer_country }}</p>
+            <p>{{ $buyer_city_zip }}, {{ $region}}</p>
         </div>
     </div>
 
@@ -87,32 +87,30 @@
             <thead>
                 <tr>
                     <th>Tétel</th>
-                    <th>Leírás</th>
                     <th>Mennyiség</th>
                     <th>Egységár (nettó)</th>
-                    <th>Összeg (nettó)</th>
-                    <th>ÁFA %</th>
                     <th>Összeg (bruttó)</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{ $item_name_1 }}</td>
-                    <td>{{ $item_sub_description_1 }}</td>
-                    <td class="text-right">{{ $item_quantity_1 }}</td>
-                    <td class="text-right">{{ $item_unit_price_net_1 }} Ft</td>
-                    <td class="text-right">{{ $item_total_price_net_1 }} Ft</td>
-                    <td class="text-right">{{ $item_vat_rate_1 }}%</td>
-                    <td class="text-right">{{ $item_total_price_gross_1 }} Ft</td>
-                </tr>
+                @foreach($items as $item)
+                    @if($item['name'] !== 'Delivery fee')
+                    <tr>
+                        <td>{{ $item['name'] }}</td>
+                        <td class="text-right">{{ $item['quantity'] }}</td>
+                        <td class="text-right">{{ $item['unit_price_net'] }} Ft</td>
+                        <td class="text-right">{{ $item['total_price_gross'] }} Ft</td>
+                    </tr>
+                    @endif
+                @endforeach
             </tbody>
         </table>
     </div>
 
     <div class="section text-right">
-        <p>Összesen (nettó): <strong>{{ number_format($subtotal_net, 2, ',', ' ') }} Ft</strong></p>
-        <p>ÁFA összesen ({{ $vat_rate_summary }}%): <strong>{{ number_format($total_vat_amount, 2, ',', ' ') }} Ft</strong></p>
-        <p><strong>Fizetendő végösszeg: {{ $grand_total_amount }} Ft</strong></p>
+        <p>Összesen (nettó): <strong>{{ number_format($grand_total, 2, ',', ' ') }} Ft</strong></p>
+        
+        <p><strong>Fizetendő végösszeg: {{ $grand_total }} Ft</strong></p>
     </div>
 
     

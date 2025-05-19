@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class SalesRenderController extends Controller
@@ -63,26 +64,29 @@ GQL;
 
     public function create_invoice($orderid)
     {
-      $response = $this->get_order_info($orderid);
-      $order = $response->json('data.ordersFetcher.orders.0');
+      $cacheKey = 'order_' . $orderid;
+
+      $order = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($orderid) {
+        $response = $this->get_order_info($orderid);
+        return $response->json('data.ordersFetcher.orders.0');
+    });
 
       // Initialize data array
       $data = [
         'invoice_id' => $order['id'] ?? null,
         'seller_name' => 'Supreme Pharmatech Hungary Kft.',
-        'seller_address_line1' => 'Budapest',
-        'seller_address_line2' => 'Corvin sétány 1/A 8. em. 4.',
+        'seller_address_line1' => '1134 Budapest',
+        'seller_address_line2' => 'Lőportár utca 12. fszt',
         'seller_city_zip' => '1082',
         'seller_country' => 'Magyarország',
-        'seller_tax_id' => '29191888-2-42',
+        'seller_tax_id' => '29191888-2-41',
         'seller_company_reg_id' => '01-09-382870',
         'page_number_info' => '1/1 Oldal',
-            'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
-            'footer_legal_text_2' => 'törvényekben foglaltaknak',
-            'billing_service_promo_1' => 'Ez a számla Billingo online számlázó programmal készült.',
-            'billing_service_promo_2' => 'Gyors és élvezetes számlázás bármikor, bárhonnan: billingo.hu',
-
-             'buyer_name' => '',
+        'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
+        'footer_legal_text_2' => 'törvényekben foglaltaknak',
+        'billing_service_promo_1' => 'Ez a számla Billingo online számlázó programmal készült.',
+        'billing_service_promo_2' => 'Gyors és élvezetes számlázás bármikor, bárhonnan: billingo.hu',
+        'buyer_name' => '',
         'buyer_phone' => '',
         'buyer_address_line1' => '',
         'buyer_address_line2' => '',
@@ -119,6 +123,7 @@ GQL;
       $address = $order['data']['addressFields'][0]['value'] ?? [];
       if (!empty($address)) {
           $data['buyer_address_line1'] = $address['city'] ?? '';
+          $data['region'] = $address['region'] ?? '';
           $data['buyer_address_line2'] = implode(' ', array_filter([
               $address['address_1'] ?? '',
               $address['address_2'] ?? '',
@@ -144,88 +149,73 @@ GQL;
       $data['order_id'] = $order['id'] ?? null;
 
       // Item (if available)
-      $promotion = $order['cart']['promotions'][0] ?? null;
-      if ($promotion) {
-          $item = $promotion['items'][0] ?? null;
-          if ($item) {
-              $unitPrice = $item['pricing']['unitPrice'] ?? 0;
-              $quantity = $item['promotionItem'] ?? 1;
-              $totalNet = $unitPrice * $quantity;
-              $vatRate = 27;
+      // Items loop
+    $items = $order['cart']['items'] ?? [];
+    $promotions = $order['cart']['promotions'] ?? [];
+    $allItems = array_merge($items, $promotions);
 
-              $data['item_name_1'] = $promotion['promotion']['name'] ?? '';
-              $data['item_sub_description_1'] = $item['sku']['item']['name'] ?? '';
-              $data['item_quantity_1'] = $quantity;
-              $data['item_unit_price_net_1'] = number_format($unitPrice, 2, ',', ' ');
-              $data['item_total_price_net_1'] = number_format($totalNet, 2, ',', ' ');
-              $data['item_vat_rate_1'] = $vatRate;
+    $subtotalNet = 0;
+    $totalVat = 0;
+    $grandTotal = 0;
+    $vatRate = 0.27;
 
-              $totalGross = round($totalNet * (1 + $vatRate / 100));
-              $data['item_total_price_gross_1'] = number_format($totalGross, 2, ',', ' ');
+    $itemsData = [];
 
-              // Totals
-              $data['subtotal_net'] = $totalNet;
-              $data['vat_rate_summary'] = $vatRate;
-              $data['total_vat_amount'] = round($totalNet * ($vatRate / 100));
-              $data['grand_total_summary'] = $data['subtotal_net'] + $data['total_vat_amount'];
-              $data['grand_total_amount'] = number_format($data['grand_total_summary'], 0, ',', ' ');
-          }
+    foreach ($items as $item) {
+      $name = $item['sku']['item']['name'] ?? 'Unknown Item';
+      $quantity = $item['quantity'] ?? 1;
+      $unitPrice = $item['pricing']['unitPrice'] ?? 0;
+      $totalPrice = $item['pricing']['totalPrice'] ?? 0;
+      $net = round($totalPrice / (1 + $vatRate), 2);
+      $vat = $totalPrice - $net;
+
+      $itemsData[] = [
+        'name' => $name,
+        'description' => '',
+        'quantity' => $quantity,
+        'unit_price_net' => number_format($unitPrice , 2, ',', ''),
+        'total_price_net' => number_format($net, 2, ',', ''),
+        'vat_rate' => 27,
+        'total_price_gross' => number_format($totalPrice, 2, ',', ''),
+      ];
+
+      $subtotalNet += $net;
+      $totalVat += $vat;
+      $grandTotal += $totalPrice;
+    }
+
+    foreach ($promotions as $promotion) {
+      $promotionName = $promotion['promotion']['name'] ?? 'Unknown Promotion';
+
+      foreach ($promotion['items'] as $item) {
+          $quantity = $item['promotionItem'] ?? 1;
+          $unitPrice = $item['pricing']['unitPrice'] ?? 0;
+          $totalPrice = $unitPrice * $quantity;
+          $net = round($totalPrice / (1 + $vatRate), 2);
+          $vat = $totalPrice - $net;
+
+          $itemsData[] = [
+              'name' => $promotionName,
+              'description' => $promotionName,
+              'quantity' => $quantity,
+              'unit_price_net' => number_format($unitPrice, 2, ',', ''),
+              'total_price_net' => number_format($net, 2, ',', ''),
+              'vat_rate' => 27,
+              'total_price_gross' => number_format($totalPrice, 2, ',', ''),
+          ];
+
+          $subtotalNet += $net;
+          $totalVat += $vat;
+          $grandTotal += $totalPrice;
       }
-      // dump($data);
+}
+
+
+      $data['items'] = $itemsData;
+      $data['grand_total'] = $grandTotal;
+
+      // dd($data);
       return view('pages.template.invoice', $data);
 
     }   
-    
-    public function show_invoice()
-    {
-        $data = [
-            'invoice_id' => '2022-8',
-            'seller_name' => 'Supreme Pharmatech Hungary Kft.',
-            'seller_address_line1' => 'Budapest',
-            'seller_address_line2' => 'Corvin sétány 1/A 8. em. 4.',
-            'seller_city_zip' => '1082',
-            'seller_country' => 'Magyarország',
-            'seller_tax_id' => '29191888-2-42',
-            'seller_company_reg_id' => '01-09-382870',
-
-            'buyer_name' => 'Horvathne Erika',
-            'buyer_address_line1' => 'Hatvan',
-            'buyer_address_line2' => 'Robert Bosch 3',
-            'buyer_city_zip' => '3000',
-            'buyer_country' => 'Magyarország',
-
-            'invoice_date' => '2022. 10. 15.',
-            'fulfillment_date' => '2022. 10. 15.',
-            'due_date' => '2022. 10. 15.',
-            'payment_method' => 'Utánvét',
-
-            'subtotal_net' => 30685.04,
-            'vat_rate_summary' => 27, // Just the number for the percentage
-
-            'note_line_1' => 'Köszönjük, hogy nálunk vásárolt!',
-            'order_id' => '1010',
-
-            'page_number_info' => '1/1 Oldal',
-            'footer_legal_text_1' => 'A számla tartalma mindenben megfelel a hatályos',
-            'footer_legal_text_2' => 'törvényekben foglaltaknak',
-            'billing_service_promo_1' => 'Ez a számla Billingo online számlázó programmal készült.',
-            'billing_service_promo_2' => 'Gyors és élvezetes számlázás bármikor, bárhonnan: billingo.hu',
-
-            // Item #1
-            'item_name_1' => 'D252 Estrodim',
-            'item_sub_description_1' => 'D252',
-            'item_quantity_1' => 3,
-            'item_unit_price_net_1' => number_format(10228.3465, 2, ',', ' '),
-            'item_total_price_net_1' => number_format(30685.04, 2, ',', ' '),
-            'item_vat_rate_1' => 27,
-            'item_total_price_gross_1' => number_format(38970.00, 2, ',', ' '),
-        ];
-
-        // Calculate VAT and grand totals
-        $data['total_vat_amount'] = round($data['subtotal_net'] * ($data['vat_rate_summary'] / 100));
-        $data['grand_total_summary'] = $data['subtotal_net'] + $data['total_vat_amount'];
-        $data['grand_total_amount'] = number_format($data['grand_total_summary'], 0, ',', ' '); // No decimals
-
-        return view('pages.template.invoice', $data);
-    }
 }
