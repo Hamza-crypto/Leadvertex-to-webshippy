@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Services\GoogleDriveService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Dompdf\Dompdf;
 
 class SalesRenderController extends Controller
 {
