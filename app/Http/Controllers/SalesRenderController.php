@@ -2,11 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\GoogleDriveService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Dompdf\Dompdf;
 
 class SalesRenderController extends Controller
 {
+  protected $googleDrive;
+
+    public function __construct(GoogleDriveService $googleDrive)
+    {
+        $this->googleDrive = $googleDrive;
+    }
+
     public function get_order_info($order_id)
     {
         $query = <<<GQL
@@ -66,7 +75,7 @@ GQL;
     {
       $cacheKey = 'order_' . $orderid;
 
-      $order = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($orderid) {
+      $order = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($orderid) {
         $response = $this->get_order_info($orderid);
         return $response->json('data.ordersFetcher.orders.0');
     });
@@ -208,14 +217,23 @@ GQL;
           $totalVat += $vat;
           $grandTotal += $totalPrice;
       }
-}
+    }
 
 
       $data['items'] = $itemsData;
       $data['grand_total'] = $grandTotal;
 
-      // dd($data);
-      return view('pages.template.invoice', $data);
+      $fileName = sprintf('Invoice_%s.html', $data['order_id']);
 
+      $localPath = 'google/' . $fileName;
+      \Storage::put($localPath, view('pages.template.invoice', $data)->render());
+
+      $this->googleDrive->uploadFile(
+          $localPath, 
+          $fileName, 
+          env('GOOGLE_DRIVE_FOLDER_ID')
+      );
+
+      return view('pages.template.invoice', $data);
     }   
 }

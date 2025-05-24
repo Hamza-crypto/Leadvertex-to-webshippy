@@ -212,7 +212,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'ExampleClass' => App\Example\ExampleClass::class,
+        'GoogleDrive' => App\Facades\GoogleDrive::class,
     ])->toArray(),
 
 ];

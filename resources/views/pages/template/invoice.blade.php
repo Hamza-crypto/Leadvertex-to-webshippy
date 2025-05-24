@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>Számla #{{ $invoice_id }}</title>
     <style>
         body {
@@ -47,6 +48,77 @@
             text-align: center;
             color: #777;
         }
+
+        .table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 5px;
+        font-size: 12pt;
+    }
+    .table th {
+        background-color: #f2f2f2;
+    }
+    .table td {
+        vertical-align: top;
+    }
+
+    body {
+        font-size: 12pt;
+        margin: 20pt;
+    }
+    .invoice-box {
+        max-width: 200mm;
+        margin: 0 auto;
+    }
+    .header, .section {
+        margin-bottom: 15pt;
+    }
+
+    .footer {
+        margin-top: 30pt;
+        font-size: 10pt;
+        page-break-after: always;
+    }
+
+    body {
+        font-family: 'DejaVu Sans', 'Liberation Sans', Arial, sans-serif;
+    }
+    @media print {
+        .footer {
+            margin-top: 0;
+        }
+        .main-content {
+            margin-bottom: 50pt; /* Space for footer */
+        }
+    }
+        @media print {
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .invoice-box {
+            max-width: 100% !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .table {
+            page-break-inside: avoid;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    }
+
+
     </style>
 </head>
 <body>
