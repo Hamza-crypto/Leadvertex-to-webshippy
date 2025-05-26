@@ -45,7 +45,8 @@ class LeadVertexNotification extends Notification
         return TelegramMessage::create()
         // Optional recipient user id.
             ->to($telegram_id)
-            ->content($msg['msg']);
+            ->content($msg['msg'])
+            ->button('View Invoice', $msg['order_id']);
 
     }
 

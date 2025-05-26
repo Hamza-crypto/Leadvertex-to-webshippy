@@ -10,10 +10,10 @@ class SalesRenderController extends Controller
 {
   protected $googleDrive;
 
-    public function __construct(GoogleDriveService $googleDrive)
-    {
-        $this->googleDrive = $googleDrive;
-    }
+    // public function __construct(GoogleDriveService $googleDrive)
+    // {
+    //     $this->googleDrive = $googleDrive;
+    // }
 
     public function get_order_info($order_id)
     {
