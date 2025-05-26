@@ -222,16 +222,16 @@ GQL;
       $data['items'] = $itemsData;
       $data['grand_total'] = $grandTotal;
 
-      $fileName = sprintf('Invoice_%s.html', $data['order_id']);
+      //$fileName = sprintf('Invoice_%s.html', $data['order_id']);
 
-      $localPath = 'google/' . $fileName;
-      \Storage::put($localPath, view('pages.template.invoice', $data)->render());
+      // $localPath = 'google/' . $fileName;
+      // \Storage::put($localPath, view('pages.template.invoice', $data)->render());
 
-      $this->googleDrive->uploadFile(
-          $localPath, 
-          $fileName, 
-          env('GOOGLE_DRIVE_FOLDER_ID')
-      );
+      // $this->googleDrive->uploadFile(
+      //     $localPath, 
+      //     $fileName, 
+      //     env('GOOGLE_DRIVE_FOLDER_ID')
+      // );
 
       return view('pages.template.invoice', $data);
     }   
