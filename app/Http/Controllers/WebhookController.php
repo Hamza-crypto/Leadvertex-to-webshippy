@@ -452,9 +452,9 @@ class WebhookController extends Controller
         $order_id = $order['id'];
         $status = data_get($order, 'status.name');
         $allowedStatuses = ['Accepted', 'Shipping', 'Sent to deliveo', 'Delivered'];
-        if (!in_array($status, $allowedStatuses)) {
-            return response()->json(['error' => 'Invalid status'], status: 200);
-        }
+        // if (!in_array($status, $allowedStatuses)) {
+        //     return response()->json(['error' => 'Invalid status'], status: 200);
+        // }
         $createdAt = data_get($order, 'createdAt', now());
 
         $rawDeliveryDate = data_get($order, 'data.dateTimeFields.0.value');

@@ -50,7 +50,7 @@ dump($response);
     }
 
     public function create_shipment($data)
-    {
+    {   return;
         $order_id = $data['id'];
         $orderFromDB = Order::where('source_id', $order_id)->first();
         if($orderFromDB->destination_id != null) return; //already sent to deliveo
@@ -98,7 +98,8 @@ dump($response);
 
                 $data_telegram['to'] = 'salesrender';
                 $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
-                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
+                dump($data_telegram['msg']);
+                // Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
             }
 
         } catch (\Exception $e) {
