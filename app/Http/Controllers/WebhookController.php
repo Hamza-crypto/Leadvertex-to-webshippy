@@ -446,12 +446,12 @@ class WebhookController extends Controller
     }
 
     public function salesrender(Request $request)
-    {  
+    {
         $order = $request->all();
 
         $order_id = $order['id'];
         $status = data_get($order, 'status.name');
-        $allowedStatuses = ['Accepted', 'Shipping', 'Sent to deliveo', 'Delivered'];
+        $allowedStatuses = ['Accepted', 'Sent to deliveo'];
         if (!in_array($status, $allowedStatuses)) {
             return response()->json(['error' => 'Invalid status'], status: 200);
         }
@@ -459,8 +459,8 @@ class WebhookController extends Controller
 
         $rawDeliveryDate = data_get($order, 'data.dateTimeFields.0.value');
         $deliveryTimestamp = $rawDeliveryDate ? \Carbon\Carbon::parse($rawDeliveryDate)->toDateTimeString() : null;
-        
-        $isDueTomorrow = $deliveryTimestamp 
+
+        $isDueTomorrow = $deliveryTimestamp
         ? Carbon::parse($deliveryTimestamp)->isSameDay(Carbon::tomorrow())
         : false;
 
@@ -490,7 +490,7 @@ class WebhookController extends Controller
         if (strtolower($status) === 'sent to deliveo') {
             $deliveoController->create_shipment($order);
         }
-        
+
         return response()->json(['success' => true]);
     }
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\GoogleDriveService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\LeadVertexNotification;
 
 class SalesRenderController extends Controller
 {
@@ -228,11 +230,125 @@ GQL;
       // \Storage::put($localPath, view('pages.template.invoice', $data)->render());
 
       // $this->googleDrive->uploadFile(
-      //     $localPath, 
-      //     $fileName, 
+      //     $localPath,
+      //     $fileName,
       //     env('GOOGLE_DRIVE_FOLDER_ID')
       // );
 
       return view('pages.template.invoice', $data);
-    }   
+    }
+
+    public function update_order_status($orderId, $statusId, $attempt = 1)
+    {
+        $mutation = <<<GQL
+            mutation UpdateOrderStatus(\$input: UpdateOrderInput!) {
+              orderMutation {
+                updateOrder(input: \$input) {
+                  id
+                  status {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+            GQL;
+
+        $variables = [
+            'input' => [
+                'id' => (string) $orderId,
+                'statusId' => (string) $statusId,
+            ],
+        ];
+
+        $result = $this->callGraphQL($mutation, $variables);
+
+        if ($this->isOrderLocked($result) && $attempt === 1) {
+            \Log::warning("Order locked. Attempting unlock...", ['order_id' => $orderId]);
+
+            $unlockResult = $this->force_unlock_order($orderId);
+
+            $unlockSuccess = $unlockResult['data']['lockMutation']['unlockEntity'] ?? false;
+
+            if ($unlockSuccess) {
+                \Log::info("Unlock successful. Retrying status update.", ['order_id' => $orderId]);
+                return $this->update_order_status($orderId, $statusId, 2);
+            } else {
+                \Log::error("Unlock failed. Not retrying update.", ['order_id' => $orderId]);
+                return null;
+            }
+        }
+
+        $updatedOrder = $result['data']['orderMutation']['updateOrder'] ?? null;
+
+        if ($updatedOrder) {
+            // ✅ Status updated successfully — Send Telegram notification
+            $data_telegram = [
+                'to' => 'salesrender',
+                'msg' => sprintf("Order %s status updated to: %s", $updatedOrder['id'], $updatedOrder['status']['name']),
+            ];
+
+            Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
+        } else {
+            \Log::error('Failed to update order status', [
+                'order_id' => $orderId,
+                'status_id' => $statusId,
+                'errors' => $result['errors'] ?? [],
+            ]);
+        }
+
+        return $updatedOrder;
+    }
+
+    protected function callGraphQL(string $query, array $variables = [])
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
+        ])->post(env('GRAPHQL_API_URL'), [
+            'query' => $query,
+            'variables' => $variables,
+        ]);
+
+        if ($response->failed()) {
+            \Log::error('GraphQL request failed', [
+                'query' => $query,
+                'variables' => $variables,
+                'response' => $response->body(),
+            ]);
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    public function force_unlock_order($orderId)
+    {
+        $mutation = <<<GQL
+            mutation ForceUnlockOrder(\$input: UnlockInput!) {
+              lockMutation {
+                unlockEntity(input: \$input)
+              }
+            }
+            GQL;
+
+        $variables = [
+            'input' => [
+                'entity' => [
+                    'entity' => 'Order',
+                    'id' => (string) $orderId,
+                ],
+            ],
+        ];
+
+        $result = $this->callGraphQL($mutation, $variables);
+
+        return $result['lockMutation']['unlockEntity'] ?? null;
+    }
+
+    private function isOrderLocked(array $result): bool
+    {
+        return !empty($result['errors'][0]['extensions']['code']) &&
+            $result['errors'][0]['extensions']['code'] === 'ERR_ORDER_LOCKED';
+    }
 }

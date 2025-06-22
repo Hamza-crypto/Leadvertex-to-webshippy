@@ -50,8 +50,9 @@ dump($response);
     }
 
     public function create_shipment($data)
-    {  
+    {
         $order_id = $data['id'];
+        dd($order_id);
         $orderFromDB = Order::where('source_id', $order_id)->first();
         if($orderFromDB->destination_id != null) return; //already sent to deliveo
 
@@ -79,7 +80,7 @@ dump($response);
 
             $apiLogData['status'] = $response->status();
             $apiLogData['response_body'] = $response->json();
-            
+
 
             if ($response->failed()) {
                 throw new \Exception('Failed to create shipment with Deliveo. Status code: ' . $response->status());
@@ -89,7 +90,7 @@ dump($response);
 
             if ($json['type'] === 'success' && isset($json['data'][0])) {
                 $shipmentId = $json['data'][0]; // e.g. MXP25050250632
-                
+
                 if ($shipmentId) {
                     Order::where('source_id', $order_id)->update([
                         'destination_id' => $shipmentId,
@@ -99,8 +100,8 @@ dump($response);
                 $data_telegram['to'] = 'salesrender';
                 $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
                 $data_telegram['order_id'] = sprintf("https://asperminw.com/invoice/%s", $order_id);
-                //dump($data_telegram['msg']);
-                Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
+                dump($data_telegram['msg']);
+                //Notification::route(TelegramChannel::class, '')->notify(new LeadVertexNotification($data_telegram));
             }
 
         } catch (\Exception $e) {
@@ -117,7 +118,7 @@ dump($response);
 
         $phoneRaw = Arr::get($webhookData, 'data.phoneFields.0.value.raw', '');
         $postcode = Arr::get($webhookData, 'data.addressFields.0.value.postcode', '');
-        
+
         $city = Arr::get($webhookData, 'data.addressFields.0.value.city', '');
         $address_1 = Arr::get($webhookData, 'data.addressFields.0.value.address_1', '');
         $address_2 = Arr::get($webhookData, 'data.addressFields.0.value.address_2', '');
@@ -135,14 +136,14 @@ dump($response);
             'sender_address' => 'Lóportár utca 12',
             'sender_phone' => '36304374237',
             'sender_email' => 'szabovk@supremepharmatech.hu',
-            'consignee' => trim($firstName . ' ' . $lastName), 
+            'consignee' => trim($firstName . ' ' . $lastName),
             'consignee_country' => $country ?? 'HU',
             'consignee_zip' => $postcode ?? '',
             'consignee_city' => $city ?? '',
             'consignee_address' => Str::limit(sprintf('%s %s', $address_1, $address_2), 40, '') ,
             'consignee_apartment' => $apartment ?? '',
             'consignee_phone' => $phoneRaw ?? '',
-           
+
             'delivery' => 89, //89: FámaFutár , 185: FoxPost //change to FámaFutár
             'cod' => $totalCodValue,
         ];
@@ -175,19 +176,19 @@ dump($response);
     private function transformPackages(array $webhookData): array
     {
         $packages = [];
-        
+
         foreach (Arr::get($webhookData, 'cart.promotions', []) as $promotion) {
             $packages[] = [
                 'customcode' => $promotion['promotion']['name'],
                 'item_no' => $promotion['promotion']['id'],
                 'weight' => 1.2,
                 ];
-        }  
+        }
 
         foreach (Arr::get($webhookData, 'cart.items', []) as $cartItem) {
             $item_id = $cartItem['sku']['item']['id'];
             if($item_id == '15') continue;
-   
+
             $packages[] = [
               'customcode' => $cartItem['sku']['item']['name'],
               'item_no' => $item_id,
@@ -197,4 +198,30 @@ dump($response);
 
         return $packages;
     }
+
+        public function get_failed_orders()
+        {
+            $lastModified = now()->subDays(30)->format('Y-m-d H:i:s');
+
+            $url = sprintf(
+                "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][nnull]=&filter[last_modified][g]=%s&limit=1",
+                env('DELIVEO_BASE_URL'),
+                env('DELIVEO_LICENCE'),
+                env('DELIVEO_API_KEY'),
+                urlencode($lastModified)
+            );
+
+//            $url = "http://localhost:1234/";
+
+            $response = Http::timeout(30)->get($url);
+
+            $response = json_decode($response);
+
+            if ($response->type != 'success') {
+                return null;
+            } else {
+                return $response->data;
+            }
+        }
 }
+

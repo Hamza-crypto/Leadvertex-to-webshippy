@@ -42,12 +42,16 @@ class LeadVertexNotification extends Notification
         } else {
             $telegram_id = env('TELEGRAM_COMNICA_ID');
         }
-        return TelegramMessage::create()
-        // Optional recipient user id.
-            ->to($telegram_id)
-            ->content($msg['msg'])
-            ->button('View Invoice', $msg['order_id']);
 
+        $telegramMessage = TelegramMessage::create()
+            ->to($telegram_id)
+            ->content($msg['msg']);
+
+        if (!empty($msg['order_id'])) {
+            $telegramMessage->button('View Invoice', $msg['order_id']);
+        }
+
+        return $telegramMessage;
     }
 
     public function toMail($notifiable)
