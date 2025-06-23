@@ -44,7 +44,7 @@ Route::get('/optimize', function () {
 });
 
 Route::get('/migrate/fresh', function () {
-    Artisan::call('migrate:fresh --seed');
+    //Artisan::call('migrate:fresh --seed');
     dump('Migration done successfully');
 });
 
@@ -59,6 +59,10 @@ Route::get('orders/send', function () {
 
 Route::get('import/orders', function () {
     Artisan::call('graphql:fetch-orders');
+});
+
+Route::get('sync/orders', function () {
+    Artisan::call('app:sync-deliveo-statuses');
 });
 
 Route::post('/fake-deliveo/package/create', function (Request $request) {

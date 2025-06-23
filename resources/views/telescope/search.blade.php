@@ -48,7 +48,7 @@
                                            value="{{ request('uri') }}">
                                 </div>
                             </div>
-                            
+
                             <!-- Search Term -->
                             <div class="col-md-4">
                                 <div class="form-group">
@@ -81,15 +81,22 @@
                         <thead>
                             <tr>
                                 <th>{{ __('ID') }}</th>
+                                <th>{{ __('Type') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($results as $entry)
-                                <tr>
-                                    <td>
-                                        <a href="telescope/requests/{{ $entry->uuid }}" target="_blank">{{ $entry->uuid }}</a>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>
+                                            <a href="telescope/{{ $entry->type === 'client_request' ? 'client-requests' : 'requests' }}/{{ $entry->uuid }}" target="_blank">
+                                                {{ $entry->uuid }}
+                                            </a>
+                                        </td>
+
+                                        <td>
+                                            {{ $entry->type }}
+                                        </td>
+                                    </tr>
                             @empty
                                 <tr>
                                     <td colspan="1" class="text-center">{{ __('No results found.') }}</td>

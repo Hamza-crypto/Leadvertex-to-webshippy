@@ -9,7 +9,7 @@ class TelescopeSearchController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DB::table('telescope_entries')->where('type', 'request');
+        $query = DB::table('telescope_entries');
 
         if ($request->has('method') && !empty($request->method)) {
             $query->WhereRaw("JSON_EXTRACT(`content`, '$.method') = ?", [$request->method]);
@@ -26,8 +26,12 @@ class TelescopeSearchController extends Controller
         }
 
         if ($request->has('search') && !empty($request->search)) {
-            $query->whereRaw("JSON_EXTRACT(`content`, '$.payload.id') = ?", [$request->search]);
+            $query->where(function ($q) use ($request) {
+                $q->whereRaw("JSON_EXTRACT(`content`, '$.payload.id') = ?", [$request->search])
+                    ->orWhereRaw("JSON_EXTRACT(`content`, '$.payload.variables.orderId') = ?", [$request->search]);
+            });
         }
+
 
         $results = $query->paginate(50);
 
