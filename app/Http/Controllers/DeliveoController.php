@@ -204,7 +204,7 @@ dump($response);
             $lastModified = now()->subDays(30)->format('Y-m-d H:i:s');
 
             $url = sprintf(
-                "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][nnull]=&filter[last_modified][g]=%s&limit=1",
+                "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][nnull]=&filter[last_modified][g]=%s&limit=10",
                 env('DELIVEO_BASE_URL'),
                 env('DELIVEO_LICENCE'),
                 env('DELIVEO_API_KEY'),
