@@ -26,7 +26,11 @@ class SyncDeliveoStatuses extends Command
         $salesRenderController = new SalesRenderController();
         $updatedOrders = [];
 
+        $orders_count = 0;
+
         foreach ($failedOrders as $failedOrder) {
+            if($orders_count > 15) break;
+
             $deliveoId = $failedOrder->deliveo_id;
             $localOrder = Order::where('destination_id', $deliveoId)->first();
 
@@ -41,6 +45,7 @@ class SyncDeliveoStatuses extends Command
             $localOrder->save();
 
             $salesRenderController->update_order_status($localOrder->source_id, 8); //Returned = 8
+            $orders_count++;
 
             $updatedOrders[] = [
                 'sales_render_id' => $localOrder->source_id,
