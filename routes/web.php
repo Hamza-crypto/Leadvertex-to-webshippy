@@ -224,3 +224,5 @@ Route::group(['middleware' => ['auth']], function () {
 Route::impersonate();
 
 Route::get('/debug', [App\Http\Controllers\TelescopeSearchController::class, 'index'])->middleware('admin');
+
+Route::view('track', 'track');
