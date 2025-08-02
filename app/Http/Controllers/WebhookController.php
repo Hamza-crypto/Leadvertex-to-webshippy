@@ -476,6 +476,11 @@ class WebhookController extends Controller
 
         $deliveoController = new DeliveoController();
 
+        // ✅ Rule 2: If delivery date is present, send only if status is Sent to deliveo
+        if ($status === 'Sent to deliveo') {
+            $deliveoController->create_shipment($order);
+        }
+
         if(is_null($deliveryTimestamp)){
             $deliveoController->create_shipment($order);
         }
@@ -484,11 +489,6 @@ class WebhookController extends Controller
             if ($status === 'Accepted' && $isDueTomorrow) {
                 $deliveoController->create_shipment($order);
             }
-        }
-
-        // ✅ Rule 2: If delivery date is present, send only if status is Sent to deliveo
-        if (strtolower($status) === 'sent to deliveo') {
-            $deliveoController->create_shipment($order);
         }
 
         return response()->json(['success' => true]);

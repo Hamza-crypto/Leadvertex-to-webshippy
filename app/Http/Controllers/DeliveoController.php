@@ -53,6 +53,7 @@ dump($response);
     {
         $order_id = $data['id'];
         $orderFromDB = Order::where('source_id', $order_id)->first();
+        dd($orderFromDB->destination_id);
         if($orderFromDB->destination_id != null) return; //already sent to deliveo
 
         $url = sprintf(
@@ -73,6 +74,8 @@ dump($response);
         ];
 
         try {
+
+            dd($data);
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
             ])->asForm()->post($url, $deliveo_data);

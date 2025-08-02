@@ -18,11 +18,13 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\WebshopPriceController;
 use App\Http\Controllers\ZappierController;
 use App\Notifications\LeadVertexNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Notification;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
+use Spatie\Browsershot\Browsershot;
 
 /*
 |--------------------------------------------------------------------------
@@ -225,4 +227,15 @@ Route::impersonate();
 
 Route::get('/debug', [App\Http\Controllers\TelescopeSearchController::class, 'index'])->middleware('admin');
 
-Route::view('track', 'track');
+
+Route::get('/invoice-preview', function () {
+
+    $url = 'https://asperminw.com/template/Invoice.html';
+    $url = 'https://asperminw.com/template/Invoice2.html';
+    $html = file_get_contents($url);
+
+    return Pdf::loadHtml($html)
+        ->setOption(['isRemoteEnabled' => true])
+        ->download('invoice.pdf');
+});
+

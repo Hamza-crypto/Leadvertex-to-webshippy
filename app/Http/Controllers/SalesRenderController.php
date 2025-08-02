@@ -7,16 +7,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\LeadVertexNotification;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class SalesRenderController extends Controller
 {
-  protected $googleDrive;
-
-    // public function __construct(GoogleDriveService $googleDrive)
-    // {
-    //     $this->googleDrive = $googleDrive;
-    // }
-
     public function get_order_info($order_id)
     {
         $query = <<<GQL
@@ -63,23 +58,24 @@ query GetOrderById(\$orderId: ID!) {
 }
 GQL;
 
-        return Http::withHeaders([
-          'Content-Type' => 'application/json',
-          'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
-        ])->post(env('GRAPHQL_API_URL'), [
-            'query' => $query,
-            'variables' => ['orderId' => $order_id],
-        ]);
+        $cacheKey = 'order_' . $order_id;
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($order_id, $query) {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . env('GRAPHQL_API_TOKEN'),
+            ])->post(env('GRAPHQL_API_URL'), [
+                'query' => $query,
+                'variables' => ['orderId' => $order_id],
+            ]);
+
+            return $response->json('data.ordersFetcher.orders.0');
+        });
     }
 
     public function create_invoice($orderid)
     {
-      $cacheKey = 'order_' . $orderid;
-
-      $order = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($orderid) {
-        $response = $this->get_order_info($orderid);
-        return $response->json('data.ordersFetcher.orders.0');
-    });
+       $order = $this->get_order_info($orderid);
 
       // Initialize data array
       $data = [
@@ -177,7 +173,7 @@ GQL;
       $unitPrice = $item['pricing']['unitPrice'] ?? 0;
       $totalPrice = $item['pricing']['totalPrice'] ?? 0;
       $net = round($totalPrice / (1 + $vatRate), 2);
-      $vat = $totalPrice - $net;
+      //$vat = $totalPrice - $net;
 
       $itemsData[] = [
         'name' => $name,
@@ -189,8 +185,8 @@ GQL;
         'total_price_gross' => number_format($totalPrice, 2, ',', ''),
       ];
 
-      $subtotalNet += $net;
-      $totalVat += $vat;
+//      $subtotalNet += $net;
+//      $totalVat += $vat;
       $grandTotal += $totalPrice;
     }
 
@@ -202,7 +198,7 @@ GQL;
           $unitPrice = $item['pricing']['unitPrice'] ?? 0;
           $totalPrice = $unitPrice * $quantity;
           $net = round($totalPrice / (1 + $vatRate), 2);
-          $vat = $totalPrice - $net;
+          //$vat = $totalPrice - $net;
 
           $itemsData[] = [
               'name' => $promotionName,
@@ -214,29 +210,39 @@ GQL;
               'total_price_gross' => number_format($totalPrice, 2, ',', ''),
           ];
 
-          $subtotalNet += $net;
-          $totalVat += $vat;
+//          $subtotalNet += $net;
+//          $totalVat += $vat;
           $grandTotal += $totalPrice;
       }
     }
 
+    $data['items'] = $itemsData;
+    $data['grand_total'] = $grandTotal;
 
-      $data['items'] = $itemsData;
-      $data['grand_total'] = $grandTotal;
+    $dateFolder = Carbon::now()->format('d-m-Y');
+    $fileName = sprintf('Invoice_%s.pdf', $data['order_id']);
 
-      //$fileName = sprintf('Invoice_%s.html', $data['order_id']);
+    $localFolderPath = storage_path('app/google/' . $dateFolder);
+    $localFilePath = $localFolderPath . '/' . $fileName;
 
-      // $localPath = 'google/' . $fileName;
-      // \Storage::put($localPath, view('pages.template.invoice', $data)->render());
+    \File::ensureDirectoryExists($localFolderPath);
 
-      // $this->googleDrive->uploadFile(
-      //     $localPath,
-      //     $fileName,
-      //     env('GOOGLE_DRIVE_FOLDER_ID')
-      // );
+    $html = view('pages.template.invoice', $data)->render();
+    Pdf::loadHtml($html)
+        ->setOption(['isRemoteEnabled' => true])
+        ->save($localFilePath);
 
-      return view('pages.template.invoice', $data);
-    }
+    $googleDriveService = new GoogleDriveService();
+    $driveFolderId = $googleDriveService->getOrCreateFolder($dateFolder, env('GOOGLE_DRIVE_FOLDER_ID'));
+
+    $googleDriveService->uploadFile(
+        $localFilePath,
+        $fileName,
+        $driveFolderId
+    );
+
+    dump('Invoice uploaded to Google Drive');
+}
 
     public function update_order_status($orderId, $statusId, $attempt = 1)
     {
