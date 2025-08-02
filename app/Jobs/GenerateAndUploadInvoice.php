@@ -21,7 +21,6 @@ class GenerateAndUploadInvoice implements ShouldQueue
     public function handle(): void
     {
         $controller = new SalesRenderController();
-        Log::info('Queue job is working for order: ' . $this->orderId);
         $controller->create_invoice($this->orderId);
     }
 }
