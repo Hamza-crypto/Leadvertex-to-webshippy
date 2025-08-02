@@ -198,29 +198,50 @@ class DeliveoController extends Controller
         return $packages;
     }
 
-        public function get_failed_orders()
-        {
-            $lastModified = now()->subDays(30)->format('Y-m-d H:i:s');
+    public function get_failed_orders()
+    {
+        $lastModified = now()->subDays(30)->format('Y-m-d H:i:s');
 
-            $url = sprintf(
-                "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][nnull]=&filter[last_modified][g]=%s&limit=300",
-                env('DELIVEO_BASE_URL'),
-                env('DELIVEO_LICENCE'),
-                env('DELIVEO_API_KEY'),
-                urlencode($lastModified)
-            );
+        $url = sprintf(
+            "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][nnull]=&filter[last_modified][g]=%s&limit=300",
+            env('DELIVEO_BASE_URL'),
+            env('DELIVEO_LICENCE'),
+            env('DELIVEO_API_KEY'),
+            urlencode($lastModified)
+        );
 
-//            $url = "http://localhost:1234/";
+        $response = Http::timeout(30)->get($url);
 
-            $response = Http::timeout(30)->get($url);
+        $response = json_decode($response);
 
-            $response = json_decode($response);
-
-            if ($response->type != 'success') {
-                return null;
-            } else {
-                return $response->data;
-            }
+        if ($response->type != 'success') {
+            return null;
+        } else {
+            return $response->data;
         }
+    }
+
+    public function get_delivered_orders()
+    {
+        $lastModified = now()->subDays(30)->format('Y-m-d H:i:s');
+
+        $url = sprintf(
+            "%spackage?licence=%s&api_key=%s&filter[unsuccessful_id][null]=&filter[last_modified][g]=%s&limit=300",
+            env('DELIVEO_BASE_URL'),
+            env('DELIVEO_LICENCE'),
+            env('DELIVEO_API_KEY'),
+            urlencode($lastModified)
+        );
+
+        $response = Http::timeout(30)->get($url);
+
+        $response = json_decode($response);
+
+        if ($response->type != 'success') {
+            return null;
+        } else {
+            return $response->data;
+        }
+    }
 }
 
