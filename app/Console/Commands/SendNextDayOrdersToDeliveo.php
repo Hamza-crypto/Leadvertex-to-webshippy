@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\DeliveoController;
 use App\Http\Controllers\SalesRenderController;
+use Illuminate\Support\Facades\Artisan;
 use App\Jobs\GenerateAndUploadInvoice;
 use Illuminate\Console\Command;
 use App\Models\Order;
@@ -16,6 +17,8 @@ class SendNextDayOrdersToDeliveo extends Command
 
     public function handle()
     {
+        Artisan::call('queue:work');
+
         $today = Carbon::now();
 
         if ($today->isWeekend()) {
