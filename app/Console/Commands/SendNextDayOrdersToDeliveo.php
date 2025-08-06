@@ -17,8 +17,6 @@ class SendNextDayOrdersToDeliveo extends Command
 
     public function handle()
     {
-        exec('php ' . base_path('artisan') . ' queue:work');
-
         $today = Carbon::now();
 
         if ($today->isWeekend()) {
