@@ -17,7 +17,7 @@ class SendNextDayOrdersToDeliveo extends Command
 
     public function handle()
     {
-        Artisan::call('queue:work');
+        exec('php ' . base_path('artisan') . ' queue:work');
 
         $today = Carbon::now();
 
