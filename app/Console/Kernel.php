@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('telescope:prune --hours=668')->daily();
         $schedule->command('orders:send-tomorrow')->dailyAt('10:00');
         $schedule->command('app:sync-deliveo-statuses')->fridays()->at('16:00');
-        $schedule->command('app:sync-deliveo-statuses')->hourly();
+        $schedule->command('app:sync-success-deliveo-statuses')->hourly();
     }
 
     /**

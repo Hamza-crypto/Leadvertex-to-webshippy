@@ -32,7 +32,7 @@ class SendNextDayOrdersToDeliveo extends Command
 
         $orders = Order::whereNull('destination_id')
             ->whereDate('delivery_date', $targetDate)
-            ->get();
+            ->first();
 
         //$orders = Order::whereNull('destination_id')->whereNotNull('delivery_date')->get();
 
