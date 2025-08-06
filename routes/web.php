@@ -59,6 +59,10 @@ Route::get('orders/send', function () {
     Artisan::call('orders:send-tomorrow');
 });
 
+Route::get('queue/work', function () {
+    Artisan::call('queue:work --stop-when-empty');
+});
+
 Route::get('import/orders', function () {
     Artisan::call('graphql:fetch-orders');
 });
