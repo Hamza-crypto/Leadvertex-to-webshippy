@@ -464,6 +464,16 @@ class WebhookController extends Controller
         ? Carbon::parse($deliveryTimestamp)->isSameDay(Carbon::tomorrow())
         : false;
 
+        $isFridayToMonday = false;
+        if ($deliveryTimestamp) {
+            $deliveryDate = Carbon::parse($deliveryTimestamp);
+            $createdDate = Carbon::parse($createdAt);
+
+            if ($createdDate->isFriday() && $deliveryDate->isMonday()) {
+                $isFridayToMonday = true;
+            }
+        }
+
         Order::updateOrCreate(
             ['source_id' => $order_id],
             [
@@ -487,6 +497,11 @@ class WebhookController extends Controller
         else{
             // ✅ Rule 1: If status is Accepted, send even if delivery date is empty
             if ($status === 'Accepted' && $isDueTomorrow) {
+                $deliveoController->create_shipment($order);
+            }
+
+            // ✅ Rule 3: If created Friday and delivery Monday
+            if ($status === 'Accepted' && $isFridayToMonday) {
                 $deliveoController->create_shipment($order);
             }
         }

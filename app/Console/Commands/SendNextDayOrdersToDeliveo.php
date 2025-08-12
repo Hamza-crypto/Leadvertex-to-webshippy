@@ -65,7 +65,6 @@ class SendNextDayOrdersToDeliveo extends Command
             );
 
             $deliveoController->create_shipment($order_data);
-            GenerateAndUploadInvoice::dispatch($order->source_id);
             dump("Sending order ID {$order->source_id} with delivery_date: {$order->delivery_date}");
         }
 

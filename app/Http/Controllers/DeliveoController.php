@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateAndUploadInvoice;
 use App\Models\APILog;
 use App\Models\Order;
 use Illuminate\Support\Arr;
@@ -96,6 +97,7 @@ class DeliveoController extends Controller
                     ]);
                 }
 
+                GenerateAndUploadInvoice::dispatch($order_id);
                 $data_telegram['to'] = 'salesrender';
                 $data_telegram['msg'] = sprintf("Order %s sent to Deliveo: %s", $order_id, $shipmentId);
                 $data_telegram['order_id'] = sprintf("https://asperminw.com/invoice/%s", $order_id);
