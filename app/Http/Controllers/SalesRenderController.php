@@ -80,7 +80,7 @@ GQL;
       // Initialize data array
       $data = [
         'invoice_id' => $order['id'] ?? null,
-        'seller_name' => 'Supreme Pharmatech Hungary Kft.',
+        'seller_name' => 'Axel Pharmatech Magyarország Kft.',
         'seller_address_line1' => '1134 Budapest',
         'seller_address_line2' => 'Lőportár utca 12. fszt',
         'seller_city_zip' => '1082',
